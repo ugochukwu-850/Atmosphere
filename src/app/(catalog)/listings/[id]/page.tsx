@@ -1,20 +1,24 @@
+import { ChevronLeft } from "lucide-react";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
 
-import { RequestCard } from "@/components/booking/RequestCard";
-import { placeLabel } from "@/components/catalog/place";
-import { DetailSection, TagList } from "@/components/listing/DetailSection";
-import { Gallery } from "@/components/listing/Gallery";
-import { MapView } from "@/components/map/MapView";
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
-import { Container } from "@/components/ui/typography";
+import { WIDE } from "@/components/catalog/SearchBand";
+import { DetailHeader } from "@/components/detail/DetailHeader";
+import { Gallery } from "@/components/detail/Gallery";
+import { PricePanel, RequestButton } from "@/components/detail/PriceCard";
+import {
+  BulletList,
+  Callout,
+  FactsRow,
+  ListedBy,
+  SectionTitle,
+} from "@/components/detail/Sections";
+import { ButtonLink } from "@/components/ui/button";
 import { getSessionToken } from "@/lib/auth/session";
 import { getItem } from "@/lib/data/catalog";
-import type { ItemKind } from "@/lib/data/types";
 import { formatNgn, titleCase } from "@/lib/format";
+import { param } from "@/lib/search-params";
 
 export async function generateMetadata({
   params,
@@ -24,184 +28,221 @@ export async function generateMetadata({
 }
 
 // `params` is request-time data under cacheComponents, so it is read inside Suspense.
-export default function ListingPage({ params }: PageProps<"/listings/[id]">) {
+export default function ListingPage({
+  params,
+  searchParams,
+}: PageProps<"/listings/[id]">) {
   return (
-    <Suspense fallback={<Container className="h-[60vh] py-10" />}>
-      <ListingContent params={params} />
+    <Suspense fallback={<div className={`${WIDE} h-[70vh]`} />}>
+      <ListingContent params={params} searchParams={searchParams} />
     </Suspense>
   );
 }
 
-const BACK: Record<
-  Exclude<ItemKind, "talent">,
-  { href: string; label: string }
+type Kind = "location" | "gear" | "gear_sale";
+
+// Copy per listing type. Location wording is from the Figma frame; gear follows it.
+const COPY: Record<
+  Kind,
+  {
+    crumb: { href: string; label: string };
+    badge: string;
+    listing: string;
+    about: string;
+    details: string;
+    before: { title: string; text: string };
+    infoTitle: string;
+    info: string;
+    back: string;
+    status: string;
+    note: string;
+    verb: string;
+    noun: string;
+  }
 > = {
-  location: { href: "/locations", label: "Locations" },
-  gear: { href: "/gear", label: "Rent gear" },
-  gear_sale: { href: "/gear/sale", label: "Buy gear" },
+  location: {
+    crumb: { href: "/locations", label: "Locations" },
+    badge: "Bookable",
+    listing: "Production Listing",
+    about: "About this space",
+    details: "Production details",
+    before: {
+      title: "Before you request",
+      text: "Listed space. Check availability and production requirements with the host.",
+    },
+    infoTitle: "Booking information",
+    info: "This space is listed as bookable. Share your shoot dates and requirements with the provider after signing in. The provider can confirm availability and any location-specific terms.",
+    back: "Back to all places",
+    status: "Bookable listing",
+    note: "Review the full location details, then sign in to request a booking from the provider.",
+    verb: "Request to book",
+    noun: "booking",
+  },
+  gear: {
+    crumb: { href: "/gear", label: "Gear" },
+    badge: "For rent",
+    listing: "Gear Listing",
+    about: "About this kit",
+    details: "In the kit",
+    before: {
+      title: "Before you rent",
+      text: "Check the serial and kit list with the owner at pickup and again at return.",
+    },
+    infoTitle: "Rental information",
+    info: "This kit is available to rent by the day. Share your dates after signing in; the owner confirms availability, deposit and handoff.",
+    back: "Back to all gear",
+    status: "Available to rent",
+    note: "Review the kit details, then sign in to request a rental from the owner.",
+    verb: "Request rental",
+    noun: "rental",
+  },
+  gear_sale: {
+    crumb: { href: "/gear/sale", label: "Gear for sale" },
+    badge: "For sale",
+    listing: "Gear Listing",
+    about: "About this kit",
+    details: "Included",
+    before: {
+      title: "Before you buy",
+      text: "Inspect the kit in person and confirm the serial before you pay.",
+    },
+    infoTitle: "Buying information",
+    info: "Purchase requests and checkout are coming soon. For now, contact the seller from their profile to arrange a viewing.",
+    back: "Back to gear for sale",
+    status: "For sale",
+    note: "Contact the seller to arrange a viewing and agree the price.",
+    verb: "Contact seller",
+    noun: "purchase",
+  },
 };
 
-/** Kit contents arrive as free text ("ballast, dome, 5m power"). */
-const kitItems = (accessories?: string) =>
-  (accessories ?? "")
+/** Free-text kit list ("ballast, dome, 5m power") as bullet items. */
+const splitList = (text?: string) =>
+  (text ?? "")
     .split(/[,;\n]/)
     .map((s) => s.trim())
-    .filter(Boolean);
+    .filter(Boolean)
+    .map((s) => s.charAt(0).toUpperCase() + s.slice(1));
 
 async function ListingContent({
   params,
-}: Pick<PageProps<"/listings/[id]">, "params">) {
-  const { id } = await params;
+  searchParams,
+}: Pick<PageProps<"/listings/[id]">, "params" | "searchParams">) {
+  const [{ id }, sp] = await Promise.all([params, searchParams]);
   const [item, token] = await Promise.all([getItem(id), getSessionToken()]);
   if (!item) notFound();
   if (item.kind === "talent") redirect(`/cast/talent/${item.id}`);
 
-  const back = BACK[item.kind];
-  const isGear = item.kind !== "location";
-  const kit = kitItems(item.accessories);
+  const kind = item.kind as Kind;
+  const copy = COPY[kind];
+  const place = [item.neighborhood, item.city].filter(Boolean).join(" ");
+  const sale = kind === "gear_sale";
+  const amount = sale ? item.salePriceNgn : item.dayRateNgn;
+  const details = splitList(item.accessories);
 
   return (
-    <Container className="flex flex-col gap-8 py-8">
-      <nav aria-label="Breadcrumb" className="text-sm text-muted-foreground">
-        <Link href={back.href} className="hover:text-foreground">
-          {back.label}
-        </Link>{" "}
-        / <span className="text-foreground">{item.title}</span>
-      </nav>
+    <article className="pb-24">
+      <DetailHeader
+        crumbs={[
+          { href: "/", label: "Home" },
+          copy.crumb,
+          { label: item.title },
+        ]}
+        title={item.title}
+        facts={[copy.badge, place, copy.listing]}
+      />
+      <Gallery
+        photos={item.photoUrl ? [item.photoUrl] : []}
+        title={item.title}
+      />
 
-      <header className="flex flex-col gap-3">
-        <div className="flex flex-wrap gap-2">
-          {item.category && (
-            <Badge variant="primary">{titleCase(item.category)}</Badge>
-          )}
-          {item.status !== "published" && (
-            <Badge>{titleCase(item.status)}</Badge>
-          )}
-        </div>
-        <h1 className="text-4xl font-bold md:text-5xl">{item.title}</h1>
-        <p className="text-muted-foreground">
-          {placeLabel(item)}
-          {item.owner && (
-            <>
-              {" · Listed by "}
-              <Link
-                href={`/people/${item.owner.id}`}
-                className="font-medium text-foreground hover:text-primary"
-              >
-                {item.owner.name}
-              </Link>
-            </>
-          )}
-        </p>
-      </header>
-
-      <Gallery photoUrl={item.photoUrl} title={item.title} />
-
-      <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_24rem]">
+      <div
+        className={`${WIDE} mt-16 grid gap-12 lg:grid-cols-[minmax(0,876fr)_minmax(0,475fr)] lg:gap-[55px]`}
+      >
         <div className="flex flex-col gap-8">
+          <h2 className="text-4xl font-semibold tracking-tight">
+            {copy.about}
+          </h2>
+          <div className="flex flex-col gap-5">
+            <ListedBy
+              label={item.owner ? "Listed by" : "Listed by a local provider"}
+              name={item.owner?.name ?? place}
+              href={item.owner ? `/people/${item.owner.id}` : undefined}
+            />
+            <FactsRow
+              items={[
+                titleCase(item.category),
+                sale
+                  ? `Asking ${formatNgn(amount)}`
+                  : `Rate ${formatNgn(amount)} / day`,
+                ...(item.serialNumber ? [`Serial ${item.serialNumber}`] : []),
+                copy.badge,
+              ]}
+            />
+          </div>
+          <p className="text-lg leading-relaxed text-muted-foreground">
+            {item.description}
+          </p>
+
+          {details.length > 0 && (
+            <section className="flex flex-col gap-4">
+              <SectionTitle>{copy.details}</SectionTitle>
+              <BulletList items={details} />
+            </section>
+          )}
+
+          <section className="flex flex-col gap-4">
+            <SectionTitle>Access and production notes</SectionTitle>
+            <Callout title={copy.before.title}>{copy.before.text}</Callout>
+          </section>
+
           <section className="flex flex-col gap-3">
-            <h2 className="text-xl font-semibold">
-              {isGear ? "About this kit" : "About this space"}
-            </h2>
-            <p className="leading-relaxed text-muted-foreground">
-              {item.description}
+            <SectionTitle>{copy.infoTitle}</SectionTitle>
+            <p className="text-lg leading-relaxed text-muted-foreground">
+              {copy.info}
             </p>
           </section>
 
-          {isGear && (item.serialNumber || kit.length > 0) && (
-            <DetailSection title="Kit details">
-              {item.serialNumber && (
-                <dl className="text-sm">
-                  <dt className="text-muted-foreground">Serial</dt>
-                  <dd className="font-mono font-medium">{item.serialNumber}</dd>
-                </dl>
-              )}
-              {kit.length > 0 && (
-                <>
-                  <p className="text-sm text-muted-foreground">In the kit</p>
-                  <TagList items={kit} />
-                </>
-              )}
-            </DetailSection>
-          )}
-
-          {item.owner && (
-            <DetailSection title={`About ${item.owner.name}`}>
-              {item.owner.bio && (
-                <p className="text-sm text-muted-foreground">
-                  {item.owner.bio}
-                </p>
-              )}
-              <Link
-                href={`/people/${item.owner.id}`}
-                className="text-sm font-medium text-primary hover:underline"
-              >
-                View profile
-              </Link>
-            </DetailSection>
-          )}
-
-          {item.lat !== undefined && item.lng !== undefined && (
-            <DetailSection title="Where it is">
-              <p className="text-sm text-muted-foreground">
-                {item.neighborhood}, {item.city}. The exact address is shared
-                once the request is accepted.
-              </p>
-              <MapView
-                center={{ lat: item.lat, lng: item.lng }}
-                zoom={14}
-                markers={[
-                  {
-                    id: item.id,
-                    title: item.title,
-                    lat: item.lat,
-                    lng: item.lng,
-                    kind: "bookable",
-                  },
-                ]}
-                className="h-72"
-              />
-            </DetailSection>
-          )}
+          <ButtonLink
+            href={copy.crumb.href}
+            variant="outline"
+            className="mt-6 h-12 self-start px-5 text-sm font-normal"
+          >
+            <ChevronLeft className="size-4" />
+            {copy.back}
+          </ButtonLink>
         </div>
 
-        <aside className="lg:sticky lg:top-24 lg:self-start">
-          {item.kind === "gear_sale" ? (
-            <Card className="flex flex-col gap-3 p-6">
-              <p className="font-heading text-2xl font-bold">
-                {formatNgn(item.salePriceNgn)}
-                <span className="text-sm font-normal text-muted-foreground">
-                  {" "}
-                  asking
-                </span>
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Purchase requests and checkout are coming soon. Contact the
-                seller from their profile.
-              </p>
-              {item.owner && (
-                <Link
+        <aside className="lg:pt-[88px]">
+          <PricePanel
+            amountNgn={amount}
+            unit={sale ? " asking" : "/per day"}
+            status={{ label: copy.status, tone: sale ? "sand" : "olive" }}
+            note={copy.note}
+          >
+            {sale ? (
+              item.owner ? (
+                <ButtonLink
                   href={`/people/${item.owner.id}`}
-                  className="text-sm font-medium text-primary hover:underline"
+                  size="lg"
+                  className="h-[66px] w-full rounded-sm text-[15px] font-normal"
                 >
-                  View {item.owner.name}&apos;s profile
-                </Link>
-              )}
-            </Card>
-          ) : (
-            <RequestCard
-              listingId={item.id}
-              dayRateNgn={item.dayRateNgn}
-              verb={
-                item.kind === "location" ? "Request booking" : "Request rental"
-              }
-              noteLabel="Note to owner"
-              signedIn={Boolean(token)}
-              disclaimer="You won't be charged yet. The owner confirms dates and payment."
-            />
-          )}
+                  {copy.verb}
+                </ButtonLink>
+              ) : null
+            ) : (
+              <RequestButton
+                listingId={item.id}
+                dayRateNgn={item.dayRateNgn}
+                verb={copy.verb}
+                noun={copy.noun}
+                signedIn={Boolean(token)}
+                autoOpen={param(sp, "request") === "1"}
+              />
+            )}
+          </PricePanel>
         </aside>
       </div>
-    </Container>
+    </article>
   );
 }

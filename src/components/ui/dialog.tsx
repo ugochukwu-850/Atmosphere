@@ -1,19 +1,27 @@
 "use client";
 
+import { X } from "lucide-react";
 import { useEffect, useRef, type ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
-/** Modal built on the native <dialog> element (focus trap + Esc for free). */
+import { Eyebrow } from "./typography";
+
+/**
+ * Modal from "Location Detail 2": warm ivory panel, rust eyebrow, close X.
+ * Built on <dialog> for focus trapping and Esc handling.
+ */
 export function Dialog({
   open,
   onClose,
+  eyebrow,
   title,
   children,
   className,
 }: {
   open: boolean;
   onClose: () => void;
+  eyebrow?: string;
   title: string;
   children: ReactNode;
   className?: string;
@@ -32,25 +40,30 @@ export function Dialog({
       ref={ref}
       onClose={onClose}
       onClick={(e) => {
-        // Click on the backdrop closes the dialog.
+        // Clicking the backdrop closes the dialog.
         if (e.target === ref.current) onClose();
       }}
       aria-label={title}
       className={cn(
-        "m-auto w-[min(28rem,calc(100%-2rem))] rounded-xl bg-popover p-0 text-popover-foreground shadow-xl backdrop:bg-ink/60",
+        "m-auto w-[min(46rem,calc(100%-2rem))] rounded-xs bg-ivory p-0 text-charcoal shadow-2xl backdrop:bg-black/60 dark:bg-card dark:text-foreground",
         className,
       )}
     >
-      <div className="flex flex-col gap-4 p-6">
+      <div className="flex flex-col gap-4 p-6 md:p-8">
         <div className="flex items-start justify-between gap-4">
-          <h2 className="text-xl font-semibold">{title}</h2>
+          <div className="flex flex-col gap-3">
+            {eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
+            <h2 className="font-sans text-2xl font-bold md:text-4xl">
+              {title}
+            </h2>
+          </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="rounded-md p-1 text-muted-foreground hover:bg-muted"
+            className="rounded-xs p-1 text-charcoal-600 hover:text-charcoal dark:text-muted-foreground"
           >
-            ✕
+            <X className="size-7" strokeWidth={1.5} />
           </button>
         </div>
         {children}

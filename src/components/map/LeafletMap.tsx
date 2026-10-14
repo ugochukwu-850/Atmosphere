@@ -25,26 +25,22 @@ const TILE_ATTRIBUTION =
   process.env.NEXT_PUBLIC_MAP_TILE_ATTRIBUTION ??
   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
-// CSS-only markers: no image assets, styled from theme tokens.
+// Teardrop pins from the Figma map (rust = bookable, olive = scout-only).
+// Inline SVG so there are no image assets; colours come from theme tokens.
+function pinIcon(fill: string): L.DivIcon {
+  return L.divIcon({
+    className: "",
+    html: `<svg width="28" height="36" viewBox="0 0 28 36" aria-hidden="true" style="filter:drop-shadow(0 2px 3px rgb(0 0 0/.35))"><path d="M14 1C7 1 1.5 6.4 1.5 13.3 1.5 22.6 14 35 14 35s12.5-12.4 12.5-21.7C26.5 6.4 21 1 14 1Z" fill="${fill}" stroke="#fff" stroke-width="2"/><circle cx="14" cy="13.5" r="4.5" fill="#fff"/></svg>`,
+    iconSize: [28, 36],
+    iconAnchor: [14, 35],
+    popupAnchor: [0, -30],
+  });
+}
+
 const ICONS: Record<MarkerKind | "pick", L.DivIcon> = {
-  bookable: L.divIcon({
-    className: "",
-    html: '<span style="display:block;width:16px;height:16px;border-radius:3px;background:var(--rust);border:2px solid #fff;box-shadow:0 1px 4px rgb(0 0 0/.4)"></span>',
-    iconSize: [16, 16],
-    iconAnchor: [8, 8],
-  }),
-  scout: L.divIcon({
-    className: "",
-    html: '<span style="display:block;width:12px;height:12px;border-radius:9999px;background:var(--gold);border:2px solid #fff;box-shadow:0 1px 4px rgb(0 0 0/.4)"></span>',
-    iconSize: [12, 12],
-    iconAnchor: [6, 6],
-  }),
-  pick: L.divIcon({
-    className: "",
-    html: '<span style="display:block;width:20px;height:20px;border-radius:9999px 9999px 9999px 0;transform:rotate(-45deg);background:var(--rust);border:2px solid #fff"></span>',
-    iconSize: [20, 20],
-    iconAnchor: [10, 20],
-  }),
+  bookable: pinIcon("var(--rust)"),
+  scout: pinIcon("var(--olive)"),
+  pick: pinIcon("var(--rust)"),
 };
 
 export type LeafletMapProps = {

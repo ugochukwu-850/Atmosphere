@@ -1,41 +1,40 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
-import { GearTabs } from "@/components/catalog/GearTabs";
-import { GEAR_CHIPS } from "@/components/catalog/gear-chips";
-import {
-  ListingCatalog,
-  ListingSearchBar,
-  type CatalogConfig,
-} from "@/components/catalog/ListingCatalog";
-import { PageHero } from "@/components/catalog/PageHero";
+import { GearResults } from "@/components/catalog/GearResults";
+import { GridSkeleton } from "@/components/catalog/GridSkeleton";
+import { ResultsSection } from "@/components/catalog/Results";
+import { SearchBand } from "@/components/catalog/SearchBand";
 
 export const metadata: Metadata = { title: "Rent gear" };
-
-const config: CatalogConfig = {
-  kind: "gear",
-  basePath: "/gear",
-  searchPlaceholder: "Search cameras, lenses, lights…",
-  chips: GEAR_CHIPS,
-  tabs: <GearTabs active="/gear" />,
-};
 
 export default function GearPage({ searchParams }: PageProps<"/gear">) {
   return (
     <>
-      <PageHero
-        eyebrow="Rent gear"
+      <SearchBand
+        crumbs={[{ href: "/", label: "Home" }, { label: "Gear" }]}
         title={
           <>
-            Kit closest
+            Find the <span className="text-sand">kit</span> your
             <br />
-            to the shoot.
+            shoot needs.
           </>
         }
-        description="Cameras, lenses and lights from people and rental houses. The closest kit ranks first when you set a city."
+        intro="Cameras, lenses, lights and sound from owners and rental houses. Browse freely—sign in only when you're ready to request a rental."
+        note={{
+          title: "From cinema cameras to lighting kits",
+          text: "Rent by the day from people closest to your set.",
+        }}
+      />
+      <Suspense
+        fallback={
+          <ResultsSection title="Kit for the shoot" summary="Loading kit…">
+            <GridSkeleton />
+          </ResultsSection>
+        }
       >
-        <ListingSearchBar config={config} searchParams={searchParams} />
-      </PageHero>
-      <ListingCatalog config={config} searchParams={searchParams} />
+        <GearResults sale={false} searchParams={searchParams} />
+      </Suspense>
     </>
   );
 }

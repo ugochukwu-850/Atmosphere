@@ -48,6 +48,7 @@ export type ScoutPin = {
   description: string;
   category: string;
   neighborhood: string;
+  city?: string;
   lat: number;
   lng: number;
   accessNotes?: string;

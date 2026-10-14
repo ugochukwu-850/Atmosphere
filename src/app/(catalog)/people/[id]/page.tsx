@@ -1,17 +1,16 @@
-import { Suspense } from "react";
+import type { Metadata } from "next";
 
-// `params` is request-time data under cacheComponents, so it is read inside Suspense.
-export default function PersonPage({ params }: PageProps<"/people/[id]">) {
+import { ComingSoon } from "@/components/detail/ComingSoon";
+
+export const metadata: Metadata = { title: "Profile" };
+
+export default function PersonPage() {
   return (
-    <Suspense>
-      <PersonContent params={params} />
-    </Suspense>
+    <ComingSoon
+      crumb="Profile"
+      title="Creative profile"
+      description="Public profiles with listings, specialties and social feeds are being rebuilt."
+      back={{ href: "/cast", label: "Back to talent" }}
+    />
   );
-}
-
-async function PersonContent({
-  params,
-}: Pick<PageProps<"/people/[id]">, "params">) {
-  const { id } = await params;
-  return <h1>Profile {id}</h1>;
 }

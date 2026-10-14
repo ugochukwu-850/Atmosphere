@@ -1,89 +1,81 @@
 @import "tailwindcss";
 
 /*
- * Theming
- * -------
- * Design tokens live as CSS variables below. Values are approximated from the
- * Figma file (Artmostsphere 2); swap in exact hex values from the Componet page.
+ * Design tokens from the Figma file "Artmostsphere 2" (see docs/design-spec.md).
+ * Brand values are the file's named colours; semantic tokens map onto them.
  *
  * Theme: <html data-theme="light" | "dark">, set before first paint by the
  * inline script in layout.tsx from the user's choice (Light / Dark / System,
- * see src/lib/theme). Light is the default; no attribute also means light.
- *
- * "ink" is the near-black used for the hero, dark strips and footer. It stays
- * dark in both themes.
+ * see src/lib/theme). Light is the design; dark is derived from the same palette.
  */
 
 /* `dark:` utilities follow the resolved theme. */
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 :root {
-  /* Radius */
-  --radius: 0.5rem;
-
   /* Fonts (next/font variables are set on <html> in layout.tsx) */
-  --font-body: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
-  --font-code: ui-monospace, monospace;
+  --font-body: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-sora), ui-sans-serif, system-ui, sans-serif;
 
-  /* Brand (theme-independent) */
-  --rust: #b5502e;
-  --rust-hover: #9c4225;
-  --gold: #c9a97a;
-  --ink: #0f0e0d;
-  --ink-foreground: #f4efe8;
-  --ink-muted: #8a8178;
+  /* Brand palette (theme-independent) */
+  --rust: #b94e2d; /* Product Rust / Production Action (primary) */
+  --rust-hover: #a3431f;
+  --olive: #53634a; /* Secondary Action */
+  --olive-hover: #45533d;
+  --charcoal: #171715; /* Deep Charcoal 500 */
+  --charcoal-600: #51514a;
+  --charcoal-700: #8b8b7e;
+  --ivory: #f4f0e7; /* Main Background / Warm Ivory */
+  --ivory-100: #31302d;
+  --ivory-200: #62605a;
+  --panel: #fcfbf7; /* Cards + Panels */
+  --sand: #d8c6a5; /* Warm Sand */
+  --sand-800: #f5e3c2;
+  --sand-900: #ffedcc;
+  --ink: #000000; /* "How it works" band, footer */
 
-  /* Colours: light */
+  /* Semantic: light (the Figma design) */
   --background: #ffffff;
-  --foreground: #141210;
-  --card: #ffffff;
-  --card-foreground: #141210;
+  --foreground: var(--charcoal);
+  --card: var(--panel);
+  --card-foreground: var(--charcoal);
   --popover: #ffffff;
-  --popover-foreground: #141210;
+  --popover-foreground: var(--charcoal);
   --primary: var(--rust);
+  --primary-hover: var(--rust-hover);
   --primary-foreground: #ffffff;
-  --secondary: #f4efe8;
-  --secondary-foreground: #141210;
-  --muted: #f4efe8;
-  --muted-foreground: #6b635b;
-  --accent: var(--gold);
-  --accent-foreground: #141210;
-  --destructive: #c62f2f;
-  --destructive-foreground: #ffffff;
-  --border: #e7e0d6;
-  --input: #ddd5ca;
+  --secondary: var(--olive);
+  --secondary-hover: var(--olive-hover);
+  --secondary-foreground: #ffffff;
+  --muted: var(--ivory);
+  --muted-foreground: var(--charcoal-600);
+  --subtle-foreground: var(--charcoal-700);
+  --destructive: #b42318;
+  --border: #ece5d8;
+  --input: #ece5d8;
   --ring: var(--rust);
 
   color-scheme: light;
 }
 
-/* Colours: dark */
 [data-theme="dark"] {
-  --background: #12100e;
-  --foreground: #f4efe8;
-  --card: #1b1815;
-  --card-foreground: #f4efe8;
-  --popover: #1b1815;
-  --popover-foreground: #f4efe8;
-  --primary: #c9603b;
-  --primary-foreground: #ffffff;
-  --secondary: #26211d;
-  --secondary-foreground: #f4efe8;
-  --muted: #221e1a;
-  --muted-foreground: #a39a90;
-  --accent: var(--gold);
-  --accent-foreground: #141210;
-  --destructive: #e05252;
-  --destructive-foreground: #ffffff;
-  --border: #2e2924;
-  --input: #3a342e;
-  --ring: #c9603b;
+  --background: var(--charcoal);
+  --foreground: var(--ivory);
+  --card: #1f1e1b;
+  --card-foreground: var(--ivory);
+  --popover: #1f1e1b;
+  --popover-foreground: var(--ivory);
+  --muted: var(--ivory-100);
+  --muted-foreground: #c9c4b8;
+  --subtle-foreground: var(--charcoal-700);
+  --destructive: #f97066;
+  --border: #31302d;
+  --input: #3d3c38;
 
   color-scheme: dark;
 }
 
-/* Expose tokens to Tailwind utilities (bg-background, text-primary, bg-ink, font-heading, ...). */
+/* Expose tokens to Tailwind (bg-background, text-primary, bg-olive, font-heading, ...). */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -92,34 +84,44 @@
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
+  --color-secondary-hover: var(--secondary-hover);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
+  --color-subtle-foreground: var(--subtle-foreground);
   --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
 
   --color-rust: var(--rust);
-  --color-rust-hover: var(--rust-hover);
-  --color-gold: var(--gold);
+  --color-olive: var(--olive);
+  --color-charcoal: var(--charcoal);
+  --color-charcoal-600: var(--charcoal-600);
+  --color-charcoal-700: var(--charcoal-700);
+  --color-ivory: var(--ivory);
+  --color-ivory-100: var(--ivory-100);
+  --color-ivory-200: var(--ivory-200);
+  --color-panel: var(--panel);
+  --color-sand: var(--sand);
+  --color-sand-800: var(--sand-800);
+  --color-sand-900: var(--sand-900);
   --color-ink: var(--ink);
-  --color-ink-foreground: var(--ink-foreground);
-  --color-ink-muted: var(--ink-muted);
 
   --font-sans: var(--font-body);
   --font-heading: var(--font-display);
-  --font-mono: var(--font-code);
 
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  /* Radii measured from the frames */
+  --radius-xs: 4px; /* badges */
+  --radius-sm: 6px; /* buttons, inputs */
+  --radius-md: 8px;
+  --radius-lg: 12px; /* card images */
+  --radius-xl: 16px; /* cards, map, search card */
+  --radius-2xl: 24px; /* hero photo card */
+  --radius-footer: 64px;
 }
 
 @layer base {
@@ -135,8 +137,8 @@
 
   h1,
   h2,
-  h3 {
+  h3,
+  h4 {
     font-family: var(--font-heading);
-    letter-spacing: -0.02em;
   }
 }

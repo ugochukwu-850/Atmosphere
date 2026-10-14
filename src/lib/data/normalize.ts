@@ -91,8 +91,9 @@ export function toPerson(user: AnyUser): Person {
   };
 }
 
+// The API also returns photoUrl and city on pins (not in the spec yet).
 export function toPin(
-  pin: PlacePin & { photoUrl?: string | null },
+  pin: PlacePin & { photoUrl?: string | null; city?: string },
 ): ScoutPin | null {
   if (pin.lat === undefined || pin.lng === undefined || !pin.id) return null;
   return {
@@ -101,6 +102,7 @@ export function toPin(
     description: pin.description ?? "",
     category: pin.category ?? "",
     neighborhood: pin.neighborhood ?? "",
+    city: pin.city || undefined,
     lat: pin.lat,
     lng: pin.lng,
     accessNotes: pin.accessNotes || undefined,
