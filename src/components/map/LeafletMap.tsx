@@ -9,6 +9,14 @@ import { MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents } from "re
 
 import type { LatLng, MapMarker, MarkerKind } from "@/types/map";
 
+// OSM's public tiles are fine for development; set NEXT_PUBLIC_MAP_TILE_URL to a
+// keyed provider (MapTiler, Stadia, CARTO) for production traffic.
+const TILE_URL =
+  process.env.NEXT_PUBLIC_MAP_TILE_URL ?? "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
+const TILE_ATTRIBUTION =
+  process.env.NEXT_PUBLIC_MAP_TILE_ATTRIBUTION ??
+  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+
 // CSS-only markers: no image assets, styled from theme tokens.
 const ICONS: Record<MarkerKind | "pick", L.DivIcon> = {
   bookable: L.divIcon({
@@ -84,10 +92,7 @@ export default function LeafletMap({
       scrollWheelZoom={false}
       className="size-full"
     >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'
-        url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-      />
+      <TileLayer attribution={TILE_ATTRIBUTION} url={TILE_URL} />
       {fitMarkers && markers.length > 1 ? (
         <FitBounds markers={markers} />
       ) : (
