@@ -28,18 +28,26 @@ export async function requestBookingAction(
     endDate: formData.get("endDate"),
     note: formData.get("note") || undefined,
   });
-  if (!parsed.success) return { fieldErrors: z.flattenError(parsed.error).fieldErrors };
+  if (!parsed.success)
+    return { fieldErrors: z.flattenError(parsed.error).fieldErrors };
 
   try {
-    const data = await unwrap(postV1Bookings({ auth: token, body: { listingId, ...parsed.data } }));
+    const data = await unwrap(
+      postV1Bookings({ auth: token, body: { listingId, ...parsed.data } }),
+    );
     return { ok: true, bookingId: data.booking?.id };
   } catch (err) {
     if (err instanceof ApiError && err.status === 409) {
-      return { fieldErrors: { startDate: ["Those dates are already booked."] } };
+      return {
+        fieldErrors: { startDate: ["Those dates are already booked."] },
+      };
     }
     if (err instanceof ApiError && err.status === 401) {
       return { error: "Your session expired. Sign in again." };
     }
-    return { error: err instanceof ApiError ? err.message : "Could not send the request." };
+    return {
+      error:
+        err instanceof ApiError ? err.message : "Could not send the request.",
+    };
   }
 }

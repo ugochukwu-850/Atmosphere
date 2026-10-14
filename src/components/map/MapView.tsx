@@ -20,7 +20,10 @@ const LeafletMap = dynamic(() => import("./LeafletMap"), {
  * Shared map: location/gear/cast search, listing detail pin, and pin-drop on the
  * listing form. Give it a height via className.
  */
-export function MapView({ className, ...props }: LeafletMapProps & { className?: string }) {
+export function MapView({
+  className,
+  ...props
+}: LeafletMapProps & { className?: string }) {
   return (
     <div className={cn("isolate overflow-hidden rounded-xl border", className)}>
       <LeafletMap {...props} />

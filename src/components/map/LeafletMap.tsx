@@ -5,14 +5,22 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import Link from "next/link";
 import { useEffect } from "react";
-import { MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents } from "react-leaflet";
+import {
+  MapContainer,
+  Marker,
+  Popup,
+  TileLayer,
+  useMap,
+  useMapEvents,
+} from "react-leaflet";
 
 import type { LatLng, MapMarker, MarkerKind } from "@/types/map";
 
 // OSM's public tiles are fine for development; set NEXT_PUBLIC_MAP_TILE_URL to a
 // keyed provider (MapTiler, Stadia, CARTO) for production traffic.
 const TILE_URL =
-  process.env.NEXT_PUBLIC_MAP_TILE_URL ?? "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
+  process.env.NEXT_PUBLIC_MAP_TILE_URL ??
+  "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
 const TILE_ATTRIBUTION =
   process.env.NEXT_PUBLIC_MAP_TILE_ATTRIBUTION ??
   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
@@ -54,10 +62,10 @@ function FitBounds({ markers }: { markers: MapMarker[] }) {
   const map = useMap();
   useEffect(() => {
     if (markers.length < 2) return;
-    map.fitBounds(
-      L.latLngBounds(markers.map((m) => [m.lat, m.lng])),
-      { padding: [32, 32], maxZoom: 14 },
-    );
+    map.fitBounds(L.latLngBounds(markers.map((m) => [m.lat, m.lng])), {
+      padding: [32, 32],
+      maxZoom: 14,
+    });
   }, [map, markers]);
   return null;
 }
@@ -110,7 +118,9 @@ export default function LeafletMap({
         </Marker>
       ))}
       {onPick && <PickHandler onPick={onPick} />}
-      {picked && <Marker position={[picked.lat, picked.lng]} icon={ICONS.pick} />}
+      {picked && (
+        <Marker position={[picked.lat, picked.lng]} icon={ICONS.pick} />
+      )}
     </MapContainer>
   );
 }

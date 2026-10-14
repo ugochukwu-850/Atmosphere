@@ -9,7 +9,9 @@ import { useArea } from "./AreaProvider";
 /** State + city selects. Sets the production area used for distance and sorting. */
 export function AreaPicker({ className }: { className?: string }) {
   const { area, setArea } = useArea();
-  const cities = area.state ? CITIES.filter((c) => c.state === area.state) : CITIES;
+  const cities = area.state
+    ? CITIES.filter((c) => c.state === area.state)
+    : CITIES;
 
   return (
     <div className={cn("flex gap-2", className)}>
@@ -31,7 +33,11 @@ export function AreaPicker({ className }: { className?: string }) {
         value={area.city ?? ""}
         onChange={(e) => {
           const city = CITIES.find((c) => c.slug === e.target.value);
-          setArea(city ? { state: city.state, city: city.slug } : { state: area.state });
+          setArea(
+            city
+              ? { state: city.state, city: city.slug }
+              : { state: area.state },
+          );
         }}
         className="h-9 w-auto min-w-32"
       >

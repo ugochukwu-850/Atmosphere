@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 
-import { ListingCatalog, ListingSearchBar, type CatalogConfig } from "@/components/catalog/ListingCatalog";
+import {
+  ListingCatalog,
+  ListingSearchBar,
+  type CatalogConfig,
+} from "@/components/catalog/ListingCatalog";
 import { PageHero } from "@/components/catalog/PageHero";
 
 export const metadata: Metadata = { title: "Locations" };
@@ -19,7 +23,9 @@ const config: CatalogConfig = {
   ],
 };
 
-export default function LocationsPage({ searchParams }: PageProps<"/locations">) {
+export default function LocationsPage({
+  searchParams,
+}: PageProps<"/locations">) {
   return (
     <>
       <PageHero

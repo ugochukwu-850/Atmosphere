@@ -23,18 +23,23 @@ function safeNext(value: FormDataEntryValue | null): string {
 function apiMessage(err: unknown): string {
   if (err instanceof ApiError) {
     if (err.status === 401) return "Email or password is incorrect.";
-    if (err.status === 429) return "Too many attempts. Wait a minute and try again.";
+    if (err.status === 429)
+      return "Too many attempts. Wait a minute and try again.";
     return err.message;
   }
   return "Could not reach the server. Try again.";
 }
 
-export async function loginAction(_prev: FormState, formData: FormData): Promise<FormState> {
+export async function loginAction(
+  _prev: FormState,
+  formData: FormData,
+): Promise<FormState> {
   const parsed = loginSchema.safeParse({
     email: formData.get("email"),
     password: formData.get("password"),
   });
-  if (!parsed.success) return { fieldErrors: z.flattenError(parsed.error).fieldErrors };
+  if (!parsed.success)
+    return { fieldErrors: z.flattenError(parsed.error).fieldErrors };
 
   try {
     await setSessionToken(await authApi.login(parsed.data));
@@ -44,7 +49,10 @@ export async function loginAction(_prev: FormState, formData: FormData): Promise
   redirect(safeNext(formData.get("next")));
 }
 
-export async function registerAction(_prev: FormState, formData: FormData): Promise<FormState> {
+export async function registerAction(
+  _prev: FormState,
+  formData: FormData,
+): Promise<FormState> {
   const parsed = registerSchema.safeParse({
     name: formData.get("name"),
     email: formData.get("email"),
@@ -52,7 +60,8 @@ export async function registerAction(_prev: FormState, formData: FormData): Prom
     password: formData.get("password"),
     roles: formData.getAll("roles"),
   });
-  if (!parsed.success) return { fieldErrors: z.flattenError(parsed.error).fieldErrors };
+  if (!parsed.success)
+    return { fieldErrors: z.flattenError(parsed.error).fieldErrors };
 
   try {
     await setSessionToken(await authApi.register(parsed.data));

@@ -6,16 +6,26 @@ import type {
   PublicUser,
 } from "@/lib/api/generated";
 
-import type { BookingSummary, CastingCall, CatalogItem, ItemKind, Person, ScoutPin } from "./types";
+import type {
+  BookingSummary,
+  CastingCall,
+  CatalogItem,
+  ItemKind,
+  Person,
+  ScoutPin,
+} from "./types";
 
 const KINDS: readonly ItemKind[] = ["location", "gear", "gear_sale", "talent"];
 
-const opt = <T>(value: T | null | undefined): T | undefined => value ?? undefined;
+const opt = <T>(value: T | null | undefined): T | undefined =>
+  value ?? undefined;
 
 export function toItem(card: ListingCard): CatalogItem {
   return {
     id: card.id ?? "",
-    kind: KINDS.includes(card.kind as ItemKind) ? (card.kind as ItemKind) : "location",
+    kind: KINDS.includes(card.kind as ItemKind)
+      ? (card.kind as ItemKind)
+      : "location",
     title: card.title ?? "Untitled",
     description: card.description ?? "",
     category: card.category ?? "",
@@ -43,12 +53,22 @@ function splitList(value: string | undefined): string[] {
 }
 
 type AnyUser = PublicUser & {
-  socialAccounts?: { platform?: string; handle?: string; url?: string; showFeed?: boolean }[];
+  socialAccounts?: {
+    platform?: string;
+    handle?: string;
+    url?: string;
+    showFeed?: boolean;
+  }[];
 };
 
 /** `profile` is an untyped object in the spec; read known string fields safely. */
-function profileField(user: AnyUser, key: "bio" | "neighborhood" | "specialties"): string | undefined {
-  const value = (user.profile as Record<string, unknown> | null | undefined)?.[key];
+function profileField(
+  user: AnyUser,
+  key: "bio" | "neighborhood" | "specialties",
+): string | undefined {
+  const value = (user.profile as Record<string, unknown> | null | undefined)?.[
+    key
+  ];
   return typeof value === "string" && value ? value : undefined;
 }
 
@@ -62,11 +82,18 @@ export function toPerson(user: AnyUser): Person {
     specialties: splitList(profileField(user, "specialties")),
     socials: (user.socialAccounts ?? [])
       .filter((s) => s.platform && s.handle)
-      .map((s) => ({ platform: s.platform!, handle: s.handle!, url: s.url, showFeed: Boolean(s.showFeed) })),
+      .map((s) => ({
+        platform: s.platform!,
+        handle: s.handle!,
+        url: s.url,
+        showFeed: Boolean(s.showFeed),
+      })),
   };
 }
 
-export function toPin(pin: PlacePin & { photoUrl?: string | null }): ScoutPin | null {
+export function toPin(
+  pin: PlacePin & { photoUrl?: string | null },
+): ScoutPin | null {
   if (pin.lat === undefined || pin.lng === undefined || !pin.id) return null;
   return {
     id: pin.id,

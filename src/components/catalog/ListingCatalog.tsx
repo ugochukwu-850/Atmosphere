@@ -31,15 +31,34 @@ export type CatalogConfig = {
 };
 
 /** Hero search box; reads `?q=` so it streams in behind Suspense. */
-export function ListingSearchBar({ config, searchParams }: { config: CatalogConfig; searchParams: SearchParams }) {
+export function ListingSearchBar({
+  config,
+  searchParams,
+}: {
+  config: CatalogConfig;
+  searchParams: SearchParams;
+}) {
   return (
-    <Suspense fallback={<SearchBar action={config.basePath} placeholder={config.searchPlaceholder} />}>
+    <Suspense
+      fallback={
+        <SearchBar
+          action={config.basePath}
+          placeholder={config.searchPlaceholder}
+        />
+      }
+    >
       <SearchBarWithQuery config={config} searchParams={searchParams} />
     </Suspense>
   );
 }
 
-async function SearchBarWithQuery({ config, searchParams }: { config: CatalogConfig; searchParams: SearchParams }) {
+async function SearchBarWithQuery({
+  config,
+  searchParams,
+}: {
+  config: CatalogConfig;
+  searchParams: SearchParams;
+}) {
   const sp = await searchParams;
   return (
     <SearchBar
@@ -52,7 +71,13 @@ async function SearchBarWithQuery({ config, searchParams }: { config: CatalogCon
 }
 
 /** Filters + grid/map for locations and gear. Everything here depends on the URL and area cookie. */
-export function ListingCatalog({ config, searchParams }: { config: CatalogConfig; searchParams: SearchParams }) {
+export function ListingCatalog({
+  config,
+  searchParams,
+}: {
+  config: CatalogConfig;
+  searchParams: SearchParams;
+}) {
   return (
     <Container className="flex flex-col gap-6 py-10">
       {config.tabs}
@@ -71,7 +96,9 @@ function toMarkers(items: CatalogItem[], pins: ScoutPin[]): MapMarker[] {
             {
               id: item.id,
               title: item.title,
-              subtitle: [placeLabel(item), itemPrice(item)].filter(Boolean).join(" · "),
+              subtitle: [placeLabel(item), itemPrice(item)]
+                .filter(Boolean)
+                .join(" · "),
               lat: item.lat,
               lng: item.lng,
               kind: "bookable" as const,
@@ -91,7 +118,13 @@ function toMarkers(items: CatalogItem[], pins: ScoutPin[]): MapMarker[] {
   ];
 }
 
-async function Results({ config, searchParams }: { config: CatalogConfig; searchParams: SearchParams }) {
+async function Results({
+  config,
+  searchParams,
+}: {
+  config: CatalogConfig;
+  searchParams: SearchParams;
+}) {
   const [sp, area] = await Promise.all([searchParams, getArea()]);
   const q = param(sp, "q");
   const category = param(sp, "category");
@@ -101,16 +134,35 @@ async function Results({ config, searchParams }: { config: CatalogConfig; search
   const { items, pins } =
     config.kind === "location"
       ? await searchLocations({ area, q, category })
-      : { items: await searchGear({ area, q, category, sale: config.kind === "gear_sale" }), pins: [] };
+      : {
+          items: await searchGear({
+            area,
+            q,
+            category,
+            sale: config.kind === "gear_sale",
+          }),
+          pins: [],
+        };
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <FilterChips basePath={config.basePath} param="category" chips={config.chips} active={category} params={params} />
-        <ViewToggle basePath={config.basePath} view={view} params={{ q, category }} />
+        <FilterChips
+          basePath={config.basePath}
+          param="category"
+          chips={config.chips}
+          active={category}
+          params={params}
+        />
+        <ViewToggle
+          basePath={config.basePath}
+          view={view}
+          params={{ q, category }}
+        />
       </div>
       <p className="text-sm text-muted-foreground">
-        {items.length} result{items.length === 1 ? "" : "s"} in {areaLabel(area)}
+        {items.length} result{items.length === 1 ? "" : "s"} in{" "}
+        {areaLabel(area)}
         {q ? ` for “${q}”` : ""}
         {view === "map" && pins.length ? ` · ${pins.length} scout pins` : ""}
       </p>

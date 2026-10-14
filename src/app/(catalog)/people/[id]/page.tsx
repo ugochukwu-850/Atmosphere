@@ -9,7 +9,9 @@ export default function PersonPage({ params }: PageProps<"/people/[id]">) {
   );
 }
 
-async function PersonContent({ params }: Pick<PageProps<"/people/[id]">, "params">) {
+async function PersonContent({
+  params,
+}: Pick<PageProps<"/people/[id]">, "params">) {
   const { id } = await params;
   return <h1>Profile {id}</h1>;
 }

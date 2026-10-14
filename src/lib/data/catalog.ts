@@ -20,7 +20,14 @@ import { client } from "@/lib/api/generated/client.gen";
 import { areaQuery, type Area } from "@/lib/area/area";
 
 import { toBooking, toCall, toItem, toPerson, toPin } from "./normalize";
-import type { BookingSummary, CastingCall, CatalogItem, ItemDetail, Person, ScoutPin } from "./types";
+import type {
+  BookingSummary,
+  CastingCall,
+  CatalogItem,
+  ItemDetail,
+  Person,
+  ScoutPin,
+} from "./types";
 
 type SearchQuery = { area: Area; q?: string; category?: string };
 
@@ -42,7 +49,9 @@ const isPin = (p: ScoutPin | null): p is ScoutPin => p !== null;
 
 // ------------------------------------------------------------- catalog
 
-export async function searchLocations(q: SearchQuery): Promise<{ items: CatalogItem[]; pins: ScoutPin[] }> {
+export async function searchLocations(
+  q: SearchQuery,
+): Promise<{ items: CatalogItem[]; pins: ScoutPin[] }> {
   const data = await unwrap(getV1Locations({ query: query(q) }));
   return {
     items: (data.listings ?? []).map(toItem),
@@ -50,7 +59,9 @@ export async function searchLocations(q: SearchQuery): Promise<{ items: CatalogI
   };
 }
 
-export async function searchGear(q: SearchQuery & { sale?: boolean }): Promise<CatalogItem[]> {
+export async function searchGear(
+  q: SearchQuery & { sale?: boolean },
+): Promise<CatalogItem[]> {
   const fetcher = q.sale ? getV1GearSale : getV1Gear;
   const data = await unwrap(fetcher({ query: query(q) }));
   return (data.listings ?? []).map(toItem);
@@ -76,11 +87,15 @@ export async function getItem(id: string): Promise<ItemDetail | null> {
 
 // ------------------------------------------------------------- cast
 
-export async function getCastBoard(q: SearchQuery): Promise<{ talent: CatalogItem[]; calls: CastingCall[] }> {
+export async function getCastBoard(
+  q: SearchQuery,
+): Promise<{ talent: CatalogItem[]; calls: CastingCall[] }> {
   // Spec gap: /v1/cast declares no query params (the API accepts the area ones),
   // so the generated validator would reject them. Call the client directly.
   const data = await unwrap(
-    client.get<{ 200: { talent?: ListingCard[]; calls?: Parameters<typeof toCall>[0][] } }>({
+    client.get<{
+      200: { talent?: ListingCard[]; calls?: Parameters<typeof toCall>[0][] };
+    }>({
       url: "/v1/cast",
       query: query(q),
     }),
@@ -108,7 +123,12 @@ export async function listCastingCalls(): Promise<CastingCall[]> {
 export async function getPerson(id: string): Promise<Person | null> {
   // Spec gap: the 200 response is typed as `Ok`; the API returns `{ user }`.
   const data = await orNull(
-    unwrap(client.get<{ 200: { user?: PublicUser } }>({ url: "/v1/users/{id}", path: { id } })),
+    unwrap(
+      client.get<{ 200: { user?: PublicUser } }>({
+        url: "/v1/users/{id}",
+        path: { id },
+      }),
+    ),
   );
   return data?.user ? toPerson(data.user) : null;
 }
@@ -121,6 +141,8 @@ export async function listBookings(token: string): Promise<BookingSummary[]> {
 }
 
 export async function getBookingThread(token: string, id: string) {
-  const data = await orNull(unwrap(getV1BookingsById({ auth: token, path: { id } })));
+  const data = await orNull(
+    unwrap(getV1BookingsById({ auth: token, path: { id } })),
+  );
   return data?.booking ?? null;
 }

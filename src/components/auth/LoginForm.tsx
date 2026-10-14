@@ -10,15 +10,32 @@ import { loginAction, type FormState } from "@/lib/auth/actions";
 
 export function LoginForm() {
   const next = useSearchParams().get("next") ?? "/";
-  const [state, action, pending] = useActionState<FormState, FormData>(loginAction, {});
+  const [state, action, pending] = useActionState<FormState, FormData>(
+    loginAction,
+    {},
+  );
 
   return (
     <form action={action} className="flex flex-col gap-4" noValidate>
       <input type="hidden" name="next" value={next} />
-      <Field label="Email" htmlFor="email" error={state.fieldErrors?.email?.[0]}>
-        <Input id="email" name="email" type="email" autoComplete="email" required />
+      <Field
+        label="Email"
+        htmlFor="email"
+        error={state.fieldErrors?.email?.[0]}
+      >
+        <Input
+          id="email"
+          name="email"
+          type="email"
+          autoComplete="email"
+          required
+        />
       </Field>
-      <Field label="Password" htmlFor="password" error={state.fieldErrors?.password?.[0]}>
+      <Field
+        label="Password"
+        htmlFor="password"
+        error={state.fieldErrors?.password?.[0]}
+      >
         <Input
           id="password"
           name="password"
@@ -37,7 +54,10 @@ export function LoginForm() {
       </Button>
       <p className="text-center text-sm text-muted-foreground">
         New here?{" "}
-        <Link href="/register" className="font-medium text-primary hover:underline">
+        <Link
+          href="/register"
+          className="font-medium text-primary hover:underline"
+        >
           Create an account
         </Link>
       </p>

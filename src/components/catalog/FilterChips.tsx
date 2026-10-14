@@ -20,7 +20,11 @@ export function FilterChips({
 }) {
   const href = (value?: string) => {
     const search = new URLSearchParams();
-    for (const [k, v] of Object.entries({ ...params, [param]: value, page: undefined })) {
+    for (const [k, v] of Object.entries({
+      ...params,
+      [param]: value,
+      page: undefined,
+    })) {
       if (v) search.set(k, v);
     }
     const qs = search.toString();

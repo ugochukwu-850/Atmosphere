@@ -25,7 +25,9 @@ export function SearchBar({
       )}
     >
       {Object.entries(hidden).map(([name, value]) =>
-        value ? <input key={name} type="hidden" name={name} value={value} /> : null,
+        value ? (
+          <input key={name} type="hidden" name={name} value={value} />
+        ) : null,
       )}
       <label htmlFor={`search-${action}`} className="sr-only">
         {placeholder}

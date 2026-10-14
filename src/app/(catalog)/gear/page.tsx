@@ -2,7 +2,11 @@ import type { Metadata } from "next";
 
 import { GearTabs } from "@/components/catalog/GearTabs";
 import { GEAR_CHIPS } from "@/components/catalog/gear-chips";
-import { ListingCatalog, ListingSearchBar, type CatalogConfig } from "@/components/catalog/ListingCatalog";
+import {
+  ListingCatalog,
+  ListingSearchBar,
+  type CatalogConfig,
+} from "@/components/catalog/ListingCatalog";
 import { PageHero } from "@/components/catalog/PageHero";
 
 export const metadata: Metadata = { title: "Rent gear" };

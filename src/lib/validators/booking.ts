@@ -5,7 +5,11 @@ export const bookingRequestSchema = z
   .object({
     startDate: z.iso.date({ error: "Pick a start date" }),
     endDate: z.iso.date({ error: "Pick an end date" }),
-    note: z.string().trim().max(1000, "Note must be 1000 characters or fewer").optional(),
+    note: z
+      .string()
+      .trim()
+      .max(1000, "Note must be 1000 characters or fewer")
+      .optional(),
   })
   .refine((data) => data.endDate >= data.startDate, {
     message: "End date must be on or after the start date",

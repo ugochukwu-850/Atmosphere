@@ -40,16 +40,26 @@ export async function UserMenu() {
         <span className="hidden text-sm md:inline">{user.name}</span>
       </summary>
       <div className="absolute right-0 mt-2 flex w-48 flex-col rounded-lg border bg-popover p-1 text-sm text-popover-foreground shadow-lg">
-        <Link href={`/people/${user.id}`} className="rounded-md px-3 py-2 hover:bg-muted">
+        <Link
+          href={`/people/${user.id}`}
+          className="rounded-md px-3 py-2 hover:bg-muted"
+        >
           Profile
         </Link>
         {MENU.map((item) => (
-          <Link key={item.href} href={item.href} className="rounded-md px-3 py-2 hover:bg-muted">
+          <Link
+            key={item.href}
+            href={item.href}
+            className="rounded-md px-3 py-2 hover:bg-muted"
+          >
             {item.label}
           </Link>
         ))}
         <form action={logoutAction}>
-          <button type="submit" className="w-full rounded-md px-3 py-2 text-left hover:bg-muted">
+          <button
+            type="submit"
+            className="w-full rounded-md px-3 py-2 text-left hover:bg-muted"
+          >
             Sign out
           </button>
         </form>

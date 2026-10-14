@@ -14,7 +14,10 @@ export function ViewToggle({
 }) {
   const href = (next: "grid" | "map") => {
     const search = new URLSearchParams();
-    for (const [k, v] of Object.entries({ ...params, view: next === "map" ? "map" : undefined })) {
+    for (const [k, v] of Object.entries({
+      ...params,
+      view: next === "map" ? "map" : undefined,
+    })) {
       if (v) search.set(k, v);
     }
     const qs = search.toString();
@@ -22,7 +25,11 @@ export function ViewToggle({
   };
 
   return (
-    <div role="group" aria-label="View" className="inline-flex rounded-lg border bg-background p-1 text-sm">
+    <div
+      role="group"
+      aria-label="View"
+      className="inline-flex rounded-lg border bg-background p-1 text-sm"
+    >
       {(["grid", "map"] as const).map((option) => (
         <Link
           key={option}
@@ -30,7 +37,9 @@ export function ViewToggle({
           aria-current={view === option ? "true" : undefined}
           className={cn(
             "rounded-md px-3 py-1.5 capitalize",
-            view === option ? "bg-ink text-ink-foreground" : "text-muted-foreground hover:text-foreground",
+            view === option
+              ? "bg-ink text-ink-foreground"
+              : "text-muted-foreground hover:text-foreground",
           )}
         >
           {option === "grid" ? "Grid" : "Map"}

@@ -32,7 +32,12 @@ export type Person = {
   bio?: string;
   neighborhood?: string;
   specialties: string[];
-  socials: { platform: string; handle: string; url?: string; showFeed: boolean }[];
+  socials: {
+    platform: string;
+    handle: string;
+    url?: string;
+    showFeed: boolean;
+  }[];
 };
 
 export type ItemDetail = CatalogItem & { owner?: Person };

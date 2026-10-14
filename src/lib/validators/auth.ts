@@ -22,7 +22,10 @@ export const registerSchema = z.object({
     .trim()
     .min(8, "Enter a valid phone number")
     .max(24, "Enter a valid phone number"),
-  password: z.string().min(8, "Use at least 8 characters").max(72, "Use 72 characters or fewer"),
+  password: z
+    .string()
+    .min(8, "Use at least 8 characters")
+    .max(72, "Use 72 characters or fewer"),
   roles: z.array(z.enum(ROLES)).min(1, "Pick at least one role"),
 });
 

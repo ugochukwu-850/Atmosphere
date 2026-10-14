@@ -9,7 +9,9 @@ export default function TalentPage({ params }: PageProps<"/cast/talent/[id]">) {
   );
 }
 
-async function TalentContent({ params }: Pick<PageProps<"/cast/talent/[id]">, "params">) {
+async function TalentContent({
+  params,
+}: Pick<PageProps<"/cast/talent/[id]">, "params">) {
   const { id } = await params;
   return <h1>Talent {id}</h1>;
 }

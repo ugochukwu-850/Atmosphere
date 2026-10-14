@@ -21,7 +21,9 @@ export function HeroSearch() {
       role="search"
       onSubmit={(e) => {
         e.preventDefault();
-        router.push(q.trim() ? `${target}?q=${encodeURIComponent(q.trim())}` : target);
+        router.push(
+          q.trim() ? `${target}?q=${encodeURIComponent(q.trim())}` : target,
+        );
       }}
       className="flex w-full max-w-3xl flex-col gap-2 rounded-2xl bg-background p-2 text-foreground shadow-2xl sm:flex-row sm:items-center"
     >

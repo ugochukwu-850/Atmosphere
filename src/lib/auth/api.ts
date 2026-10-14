@@ -1,5 +1,9 @@
 import { ApiError, unwrap } from "@/lib/api/client";
-import { getV1AuthMe, postV1AuthLogin, postV1AuthRegister } from "@/lib/api/generated";
+import {
+  getV1AuthMe,
+  postV1AuthLogin,
+  postV1AuthRegister,
+} from "@/lib/api/generated";
 import type { LoginInput, RegisterInput } from "@/lib/validators/auth";
 
 import { SESSION_COOKIE } from "./constants";
@@ -15,7 +19,8 @@ function sessionTokenFrom(response: Response | undefined): string {
     .getSetCookie()
     .find((c) => c.startsWith(`${SESSION_COOKIE}=`));
   const token = cookie?.split(";")[0]?.slice(SESSION_COOKIE.length + 1);
-  if (!token) throw new ApiError(502, "Signed in, but the API did not return a session.");
+  if (!token)
+    throw new ApiError(502, "Signed in, but the API did not return a session.");
   return token;
 }
 
@@ -27,7 +32,12 @@ async function withToken(
   return sessionTokenFrom(result.response);
 }
 
-function toSessionUser(user: { id?: string; name?: string; email?: string; roles?: string[] }): SessionUser {
+function toSessionUser(user: {
+  id?: string;
+  name?: string;
+  email?: string;
+  roles?: string[];
+}): SessionUser {
   return {
     id: user.id ?? "",
     name: user.name ?? "",

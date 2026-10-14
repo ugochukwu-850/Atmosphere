@@ -30,7 +30,9 @@ export function findCity(slug: string | undefined): City | undefined {
 }
 
 /** Point distances are measured from: the city, else the first city of the state. */
-export function areaOrigin(area: Area): { lat: number; lng: number } | undefined {
+export function areaOrigin(
+  area: Area,
+): { lat: number; lng: number } | undefined {
   const city = findCity(area.city);
   if (city) return city;
   return area.state ? CITIES.find((c) => c.state === area.state) : undefined;

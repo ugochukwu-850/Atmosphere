@@ -8,7 +8,10 @@ import { Button, ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog } from "@/components/ui/dialog";
 import { Field, Input, Textarea } from "@/components/ui/form";
-import { requestBookingAction, type BookingFormState } from "@/lib/bookings/actions";
+import {
+  requestBookingAction,
+  type BookingFormState,
+} from "@/lib/bookings/actions";
 import { formatNgn } from "@/lib/format";
 import { bookingDays } from "@/lib/validators/booking";
 
@@ -39,7 +42,8 @@ export function RequestCard({
     {},
   );
 
-  const days = dates.start && dates.end ? bookingDays(dates.start, dates.end) : 0;
+  const days =
+    dates.start && dates.end ? bookingDays(dates.start, dates.end) : 0;
   const today = new Date().toISOString().slice(0, 10);
   const err = (key: string) => state.fieldErrors?.[key]?.[0];
 
@@ -50,7 +54,10 @@ export function RequestCard({
         <p className="text-sm text-muted-foreground">
           The owner confirms dates and payment. Track it in your bookings.
         </p>
-        <ButtonLink href={state.bookingId ? `/bookings/${state.bookingId}` : "/bookings"} variant="outline">
+        <ButtonLink
+          href={state.bookingId ? `/bookings/${state.bookingId}` : "/bookings"}
+          variant="outline"
+        >
           View booking
         </ButtonLink>
       </Card>
@@ -60,13 +67,12 @@ export function RequestCard({
   return (
     <Card className="flex flex-col gap-5 p-6">
       <p>
-        <span className="font-heading text-2xl font-bold">{formatNgn(dayRateNgn)}</span>
+        <span className="font-heading text-2xl font-bold">
+          {formatNgn(dayRateNgn)}
+        </span>
         <span className="text-sm text-muted-foreground"> / day</span>
       </p>
-      <form
-        action={action}
-        className="flex flex-col gap-4"
-      >
+      <form action={action} className="flex flex-col gap-4">
         <div className="grid grid-cols-2 gap-3">
           <Field label="Start" htmlFor="startDate" error={err("startDate")}>
             <Input
@@ -76,7 +82,9 @@ export function RequestCard({
               min={today}
               required
               value={dates.start}
-              onChange={(e) => setDates((d) => ({ ...d, start: e.target.value }))}
+              onChange={(e) =>
+                setDates((d) => ({ ...d, start: e.target.value }))
+              }
             />
           </Field>
           <Field label="End" htmlFor="endDate" error={err("endDate")}>
@@ -92,14 +100,21 @@ export function RequestCard({
           </Field>
         </div>
         <Field label={noteLabel} htmlFor="note" error={err("note")}>
-          <Textarea id="note" name="note" rows={3} placeholder="Crew size, call times, anything they should know" />
+          <Textarea
+            id="note"
+            name="note"
+            rows={3}
+            placeholder="Crew size, call times, anything they should know"
+          />
         </Field>
         {days > 0 && (
           <div className="flex items-center justify-between border-t pt-4 text-sm">
             <span className="text-muted-foreground">
               {formatNgn(dayRateNgn)} × {days} day{days === 1 ? "" : "s"}
             </span>
-            <span className="font-semibold">{formatNgn(dayRateNgn * days)}</span>
+            <span className="font-semibold">
+              {formatNgn(dayRateNgn * days)}
+            </span>
           </div>
         )}
         {state.error && (
@@ -117,15 +132,23 @@ export function RequestCard({
             {verb}
           </Button>
         )}
-        {disclaimer && <p className="text-xs text-muted-foreground">{disclaimer}</p>}
+        {disclaimer && (
+          <p className="text-xs text-muted-foreground">{disclaimer}</p>
+        )}
       </form>
 
-      <Dialog open={gateOpen} onClose={() => setGateOpen(false)} title={`Sign in to ${verb.toLowerCase()}`}>
+      <Dialog
+        open={gateOpen}
+        onClose={() => setGateOpen(false)}
+        title={`Sign in to ${verb.toLowerCase()}`}
+      >
         <p className="text-sm text-muted-foreground">
           You need an account to send requests. Your dates stay on this page.
         </p>
         <div className="flex flex-col gap-2">
-          <ButtonLink href={`/login?next=${encodeURIComponent(pathname)}`}>Sign in</ButtonLink>
+          <ButtonLink href={`/login?next=${encodeURIComponent(pathname)}`}>
+            Sign in
+          </ButtonLink>
           <Link
             href="/register"
             className="text-center text-sm font-medium text-primary hover:underline"

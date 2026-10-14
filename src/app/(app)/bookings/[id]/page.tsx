@@ -9,7 +9,9 @@ export default function BookingPage({ params }: PageProps<"/bookings/[id]">) {
   );
 }
 
-async function BookingContent({ params }: Pick<PageProps<"/bookings/[id]">, "params">) {
+async function BookingContent({
+  params,
+}: Pick<PageProps<"/bookings/[id]">, "params">) {
   const { id } = await params;
   return <h1>Booking {id}</h1>;
 }

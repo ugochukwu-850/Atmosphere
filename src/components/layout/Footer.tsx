@@ -34,8 +34,8 @@ export function Footer() {
         <div className="flex max-w-sm flex-col gap-3">
           <p className="font-heading text-lg font-bold">ArtMostSphere</p>
           <p className="text-sm text-ink-muted">
-            Africa&apos;s production OS, starting in Nigeria. Locations, kit and crew in one
-            catalog. We are not an insurer.
+            Africa&apos;s production OS, starting in Nigeria. Locations, kit and
+            crew in one catalog. We are not an insurer.
           </p>
         </div>
         {COLUMNS.map((col) => (
@@ -44,7 +44,11 @@ export function Footer() {
               {col.title}
             </p>
             {col.links.map((link) => (
-              <Link key={link.href} href={link.href} className="text-sm hover:text-gold">
+              <Link
+                key={link.href}
+                href={link.href}
+                className="text-sm hover:text-gold"
+              >
                 {link.label}
               </Link>
             ))}

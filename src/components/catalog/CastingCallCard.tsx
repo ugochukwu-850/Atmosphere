@@ -7,7 +7,13 @@ import { formatDate, titleCase } from "@/lib/format";
 
 import { placeLabel } from "./place";
 
-export function CastingCallCard({ call, children }: { call: CastingCall; children?: ReactNode }) {
+export function CastingCallCard({
+  call,
+  children,
+}: {
+  call: CastingCall;
+  children?: ReactNode;
+}) {
   return (
     <Card className="flex flex-col gap-4 p-6">
       <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
@@ -22,7 +28,8 @@ export function CastingCallCard({ call, children }: { call: CastingCall; childre
       {(call.owner || call.applications !== undefined) && (
         <p className="text-xs text-muted-foreground">
           {call.owner && `Posted by ${call.owner.name}`}
-          {call.applications !== undefined && ` · ${call.applications} interested`}
+          {call.applications !== undefined &&
+            ` · ${call.applications} interested`}
         </p>
       )}
       {children}

@@ -22,8 +22,14 @@ export function PageHero({
       <Container className="flex flex-col gap-6 py-14 md:py-20">
         <div className="flex max-w-2xl flex-col gap-3">
           <Eyebrow>{eyebrow}</Eyebrow>
-          <h1 className="text-4xl leading-[1.05] font-bold md:text-6xl">{title}</h1>
-          {description && <p className="text-base text-ink-foreground/70 md:text-lg">{description}</p>}
+          <h1 className="text-4xl leading-[1.05] font-bold md:text-6xl">
+            {title}
+          </h1>
+          {description && (
+            <p className="text-base text-ink-foreground/70 md:text-lg">
+              {description}
+            </p>
+          )}
         </div>
         {children}
       </Container>
