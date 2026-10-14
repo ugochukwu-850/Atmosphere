@@ -22,7 +22,9 @@ function safeNext(value: FormDataEntryValue | null): string {
 
 function apiMessage(err: unknown): string {
   if (err instanceof ApiError) {
-    return err.status === 401 ? "Email or password is incorrect." : err.message;
+    if (err.status === 401) return "Email or password is incorrect.";
+    if (err.status === 429) return "Too many attempts. Wait a minute and try again.";
+    return err.message;
   }
   return "Could not reach the server. Try again.";
 }
@@ -35,8 +37,7 @@ export async function loginAction(_prev: FormState, formData: FormData): Promise
   if (!parsed.success) return { fieldErrors: z.flattenError(parsed.error).fieldErrors };
 
   try {
-    const { token } = await authApi.login(parsed.data);
-    await setSessionToken(token);
+    await setSessionToken(await authApi.login(parsed.data));
   } catch (err) {
     return { error: apiMessage(err) };
   }
@@ -54,8 +55,7 @@ export async function registerAction(_prev: FormState, formData: FormData): Prom
   if (!parsed.success) return { fieldErrors: z.flattenError(parsed.error).fieldErrors };
 
   try {
-    const { token } = await authApi.register(parsed.data);
-    await setSessionToken(token);
+    await setSessionToken(await authApi.register(parsed.data));
   } catch (err) {
     return { error: apiMessage(err) };
   }

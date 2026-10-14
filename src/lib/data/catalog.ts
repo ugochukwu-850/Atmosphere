@@ -1,188 +1,126 @@
 /**
- * Data access for pages. Uses mock data until the backend is live
- * (API_MOCK=0 switches to the generated SDK).
+ * Server-side data access for pages, on top of the generated SDK.
+ * Everything returns normalized view models (./types).
  */
-import { unwrap } from "@/lib/api/client";
+import { ApiError, unwrap } from "@/lib/api/client";
 import {
-  getBooking as sdkGetBooking,
-  getCastingCall as sdkGetCastingCall,
-  getListing as sdkGetListing,
-  getPublicProfile as sdkGetPublicProfile,
-  getTalent as sdkGetTalent,
-  listBookings as sdkListBookings,
-  listCastingCalls as sdkListCastingCalls,
-  listListings as sdkListListings,
-  listScoutPins as sdkListScoutPins,
-  listTalent as sdkListTalent,
-  type Booking,
-  type CastingCall,
-  type Listing,
-  type ListingKind,
-  type Place,
-  type PublicProfile,
-  type ScoutPin,
-  type Talent,
-  type TalentRole,
+  getV1BookingsById,
+  getV1Bookings,
+  getV1CastCalls,
+  getV1CastTalentById,
+  getV1CatalogHome,
+  getV1Gear,
+  getV1GearSale,
+  getV1ListingsById,
+  getV1Locations,
+  type ListingCard,
+  type PublicUser,
 } from "@/lib/api/generated";
-import { areaOrigin, distanceKm, type Area } from "@/lib/area/area";
+import { client } from "@/lib/api/generated/client.gen";
+import { areaQuery, type Area } from "@/lib/area/area";
 
-import { BOOKINGS, CASTING_CALLS, LISTINGS, SCOUT_PINS, TALENT } from "./mock";
+import { toBooking, toCall, toItem, toPerson, toPin } from "./normalize";
+import type { BookingSummary, CastingCall, CatalogItem, ItemDetail, Person, ScoutPin } from "./types";
 
-const USE_MOCK = process.env.API_MOCK !== "0";
+type SearchQuery = { area: Area; q?: string; category?: string };
 
-export const PAGE_SIZE = 12;
-
-export type Page<T> = { items: T[]; page: number; pageSize: number; total: number };
-
-type AreaQuery = { area: Area };
-
-/** Query params the API uses for the production area. */
-function areaParams(area: Area) {
-  const origin = areaOrigin(area);
-  return { state: area.state, city: area.city, lat: origin?.lat, lng: origin?.lng };
+function query({ area, q, category }: SearchQuery) {
+  return { ...areaQuery(area), q, category };
 }
 
-// ------------------------------------------------------------- mock helpers
-
-function inArea(place: Pick<Place, "state" | "city">, area: Area) {
-  if (area.city) return place.city === area.city;
-  if (area.state) return place.state === area.state;
-  return true;
-}
-
-function withDistance<T extends { place: Place }>(items: T[], area: Area): T[] {
-  const origin = areaOrigin(area);
-  if (!origin) return items;
-  return items
-    .map((item) =>
-      item.place.lat !== undefined && item.place.lng !== undefined
-        ? {
-            ...item,
-            place: {
-              ...item.place,
-              distanceKm: Math.round(distanceKm(origin, { lat: item.place.lat, lng: item.place.lng })),
-            },
-          }
-        : item,
-    )
-    .sort((a, b) => (a.place.distanceKm ?? Infinity) - (b.place.distanceKm ?? Infinity));
-}
-
-function paginate<T>(items: T[], page: number): Page<T> {
-  const start = (page - 1) * PAGE_SIZE;
-  return { items: items.slice(start, start + PAGE_SIZE), page, pageSize: PAGE_SIZE, total: items.length };
-}
-
-function matchesText(q: string | undefined, ...fields: (string | undefined)[]) {
-  if (!q) return true;
-  const needle = q.toLowerCase();
-  return fields.some((f) => f?.toLowerCase().includes(needle));
-}
-
-// ------------------------------------------------------------- listings
-
-export type ListingQuery = AreaQuery & {
-  kind: ListingKind;
-  category?: string;
-  q?: string;
-  page?: number;
-};
-
-export async function searchListings({ kind, category, q, area, page = 1 }: ListingQuery): Promise<Page<Listing>> {
-  if (!USE_MOCK) {
-    return unwrap(
-      sdkListListings({ query: { kind, category, q, page, pageSize: PAGE_SIZE, ...areaParams(area) } }),
-    );
+/** null on 404, rethrow anything else. */
+async function orNull<T>(promise: Promise<T>): Promise<T | null> {
+  try {
+    return await promise;
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) return null;
+    throw err;
   }
-  const filtered = LISTINGS.filter(
-    (l) =>
-      l.kind === kind &&
-      (!category || l.category === category) &&
-      inArea(l.place, area) &&
-      matchesText(q, l.title, l.description, l.place.neighborhood),
+}
+
+const isPin = (p: ScoutPin | null): p is ScoutPin => p !== null;
+
+// ------------------------------------------------------------- catalog
+
+export async function searchLocations(q: SearchQuery): Promise<{ items: CatalogItem[]; pins: ScoutPin[] }> {
+  const data = await unwrap(getV1Locations({ query: query(q) }));
+  return {
+    items: (data.listings ?? []).map(toItem),
+    pins: (data.pins ?? []).map(toPin).filter(isPin),
+  };
+}
+
+export async function searchGear(q: SearchQuery & { sale?: boolean }): Promise<CatalogItem[]> {
+  const fetcher = q.sale ? getV1GearSale : getV1Gear;
+  const data = await unwrap(fetcher({ query: query(q) }));
+  return (data.listings ?? []).map(toItem);
+}
+
+export async function getHome() {
+  const data = await unwrap(getV1CatalogHome());
+  return {
+    pinCount: data.pins ?? 0,
+    locations: (data.locations ?? []).map(toItem),
+    gear: (data.gear ?? []).map(toItem),
+    gearSale: (data.gearSale ?? []).map(toItem),
+    talent: (data.talent ?? []).map(toItem),
+  };
+}
+
+export async function getItem(id: string): Promise<ItemDetail | null> {
+  const data = await orNull(unwrap(getV1ListingsById({ path: { id } })));
+  if (!data?.listing) return null;
+  const { owner, ...card } = data.listing;
+  return { ...toItem(card), owner: owner ? toPerson(owner) : undefined };
+}
+
+// ------------------------------------------------------------- cast
+
+export async function getCastBoard(q: SearchQuery): Promise<{ talent: CatalogItem[]; calls: CastingCall[] }> {
+  // Spec gap: /v1/cast declares no query params (the API accepts the area ones),
+  // so the generated validator would reject them. Call the client directly.
+  const data = await unwrap(
+    client.get<{ 200: { talent?: ListingCard[]; calls?: Parameters<typeof toCall>[0][] } }>({
+      url: "/v1/cast",
+      query: query(q),
+    }),
   );
-  return paginate(withDistance(filtered, area), page);
+  return {
+    talent: (data.talent ?? []).map(toItem),
+    calls: (data.calls ?? []).map(toCall),
+  };
 }
 
-export async function getListing(id: string): Promise<Listing | null> {
-  if (!USE_MOCK) return unwrap(sdkGetListing({ path: { listingId: id } })).catch(() => null);
-  return LISTINGS.find((l) => l.id === id) ?? null;
+export async function getTalent(id: string): Promise<ItemDetail | null> {
+  const data = await orNull(unwrap(getV1CastTalentById({ path: { id } })));
+  if (!data?.listing) return null;
+  const { owner, ...card } = data.listing;
+  return { ...toItem(card), owner: owner ? toPerson(owner) : undefined };
 }
 
-export async function listScoutPins(area: Area): Promise<ScoutPin[]> {
-  if (!USE_MOCK) return unwrap(sdkListScoutPins({ query: { state: area.state, city: area.city } }));
-  return SCOUT_PINS.filter((p) => inArea({ state: p.state ?? "", city: p.city ?? "" }, area));
-}
-
-// ------------------------------------------------------------- talent
-
-export type TalentQuery = AreaQuery & { role?: TalentRole; q?: string; page?: number };
-
-export async function searchTalent({ role, q, area, page = 1 }: TalentQuery): Promise<Page<Talent>> {
-  if (!USE_MOCK) {
-    return unwrap(sdkListTalent({ query: { role, q, page, pageSize: PAGE_SIZE, ...areaParams(area) } }));
-  }
-  const filtered = TALENT.filter(
-    (t) =>
-      (!role || t.roles.includes(role)) &&
-      inArea(t.place, area) &&
-      matchesText(q, t.user.name, t.headline, t.bio, ...(t.specialties ?? [])),
-  );
-  return paginate(withDistance(filtered, area), page);
-}
-
-export async function getTalent(id: string): Promise<Talent | null> {
-  if (!USE_MOCK) return unwrap(sdkGetTalent({ path: { talentId: id } })).catch(() => null);
-  return TALENT.find((t) => t.id === id) ?? null;
-}
-
-// ------------------------------------------------------------- casting
-
-export async function listCastingCalls({
-  area,
-  role,
-}: AreaQuery & { role?: TalentRole }): Promise<Page<CastingCall>> {
-  if (!USE_MOCK) {
-    return unwrap(sdkListCastingCalls({ query: { role, state: area.state, city: area.city } }));
-  }
-  const filtered = CASTING_CALLS.filter((c) => (!role || c.roleNeeded === role) && inArea(c.place, area));
-  return paginate(filtered, 1);
-}
-
-export async function getCastingCall(id: string): Promise<CastingCall | null> {
-  if (!USE_MOCK) return unwrap(sdkGetCastingCall({ path: { callId: id } })).catch(() => null);
-  return CASTING_CALLS.find((c) => c.id === id) ?? null;
-}
-
-// ------------------------------------------------------------- bookings
-
-export async function listBookings(token: string): Promise<Page<Booking>> {
-  if (!USE_MOCK) return unwrap(sdkListBookings({ auth: token }));
-  return paginate(BOOKINGS, 1);
-}
-
-export async function getBooking(token: string, id: string): Promise<Booking | null> {
-  if (!USE_MOCK) return unwrap(sdkGetBooking({ auth: token, path: { bookingId: id } })).catch(() => null);
-  return BOOKINGS.find((b) => b.id === id) ?? null;
+export async function listCastingCalls(): Promise<CastingCall[]> {
+  const data = await unwrap(getV1CastCalls());
+  return (data.calls ?? []).map(toCall);
 }
 
 // ------------------------------------------------------------- people
 
-export async function getPublicProfile(id: string): Promise<PublicProfile | null> {
-  if (!USE_MOCK) return unwrap(sdkGetPublicProfile({ path: { userId: id } })).catch(() => null);
-  const talent = TALENT.find((t) => t.user.id === id);
-  const listings = LISTINGS.filter((l) => l.owner.id === id);
-  const user = talent?.user ?? listings[0]?.owner;
-  if (!user) return null;
-  return {
-    id: user.id,
-    name: user.name,
-    roles: [...(talent ? (["creator"] as const) : []), ...(listings.length ? (["owner"] as const) : [])],
-    neighborhood: talent?.place.neighborhood,
-    bio: talent?.bio,
-    specialties: talent?.specialties,
-    socials: talent?.socials,
-    talent,
-    listings,
-  };
+export async function getPerson(id: string): Promise<Person | null> {
+  // Spec gap: the 200 response is typed as `Ok`; the API returns `{ user }`.
+  const data = await orNull(
+    unwrap(client.get<{ 200: { user?: PublicUser } }>({ url: "/v1/users/{id}", path: { id } })),
+  );
+  return data?.user ? toPerson(data.user) : null;
+}
+
+// ------------------------------------------------------------- bookings
+
+export async function listBookings(token: string): Promise<BookingSummary[]> {
+  const data = await unwrap(getV1Bookings({ auth: token }));
+  return (data.bookings ?? []).map(toBooking);
+}
+
+export async function getBookingThread(token: string, id: string) {
+  const data = await orNull(unwrap(getV1BookingsById({ auth: token, path: { id } })));
+  return data?.booking ?? null;
 }

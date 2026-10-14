@@ -10,7 +10,8 @@
     "typecheck": "next typegen && tsc --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "api:generate": "openapi-ts"
+    "api:generate": "openapi-ts",
+    "api:pull": "curl -fsS https://api-production-ae3ac.up.railway.app/openapi.json -o openapi/backend.openapi.json && prettier --write openapi/backend.openapi.json"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

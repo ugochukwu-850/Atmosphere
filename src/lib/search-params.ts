@@ -6,8 +6,3 @@ export function param(sp: Raw, key: string): string | undefined {
   const first = Array.isArray(value) ? value[0] : value;
   return first?.trim() || undefined;
 }
-
-export function pageParam(sp: Raw): number {
-  const n = Number(param(sp, "page"));
-  return Number.isInteger(n) && n > 0 ? n : 1;
-}

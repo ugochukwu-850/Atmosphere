@@ -1,3 +1,7 @@
-import type { User } from "@/lib/api/generated";
-
-export type SessionUser = User;
+export type SessionUser = {
+  id: string;
+  name: string;
+  email: string;
+  /** "renter" | "owner" | "talent" | "admin" (the API types these as plain strings). */
+  roles: string[];
+};

@@ -2,850 +2,783 @@
 
 import * as z from "zod";
 
+export const zHealth = z.object({
+  ok: z.boolean().optional(),
+  service: z.string().optional(),
+});
+
 export const zError = z.object({
-  message: z.string(),
+  error: z.string(),
+  code: z
+    .enum([
+      "bad_request",
+      "validation_error",
+      "unauthorized",
+      "forbidden",
+      "not_found",
+      "conflict",
+      "rate_limited",
+      "internal_error",
+      "error",
+    ])
+    .optional(),
+});
+
+export const zUnauthorizedMe = z.object({
+  error: z.string().optional(),
   code: z.string().optional(),
+  user: z.null().optional(),
 });
 
-export const zValidationError = z.object({
-  message: z.string(),
-  fieldErrors: z.record(z.string(), z.array(z.string())),
+export const zSessionUser = z.object({
+  id: z.string().optional(),
+  email: z.string().optional(),
+  name: z.string().optional(),
+  phone: z.string().nullish(),
+  roles: z.array(z.string()).optional(),
 });
 
-export const zDateRange = z.object({
-  startDate: z.iso.date(),
-  endDate: z.iso.date(),
+export const zSessionUserEnvelope = z.object({
+  user: zSessionUser.optional(),
 });
 
-export const zGeoPoint = z.object({
-  lat: z.number().gte(-90).lte(90),
-  lng: z.number().gte(-180).lte(180),
-});
-
-export const zCity = z.object({
-  slug: z.string(),
-  name: z.string(),
-  state: z.string(),
-  lat: z.number(),
-  lng: z.number(),
-});
-
-/**
- * Where something sits; `distanceKm` is set when the request had an origin
- */
-export const zPlace = z.object({
-  city: z.string(),
-  state: z.string(),
-  neighborhood: z.string(),
-  lat: z.number().optional(),
-  lng: z.number().optional(),
-  distanceKm: z.number().optional(),
-});
-
-export const zPhoto = z.object({
-  url: z.url(),
-  alt: z.string().optional(),
-});
-
-export const zRole = z.enum(["renter", "owner", "creator", "admin", "ops"]);
-
-export const zSelfServeRole = z.enum(["renter", "owner", "creator"]);
-
-export const zUserSummary = z.object({
-  id: z.string(),
-  name: z.string(),
-  avatarUrl: z.url().optional(),
-});
-
-export const zProfileUpdate = z.object({
-  name: z.string().min(2).optional(),
-  phone: z.string().optional(),
-  neighborhood: z.string().optional(),
-  specialties: z.array(z.string()).optional(),
-  bio: z.string().max(2000).optional(),
-});
-
-export const zSocialPlatform = z.enum([
-  "instagram",
-  "tiktok",
-  "youtube",
-  "x",
-  "facebook",
-  "vimeo",
-]);
-
-export const zSocials = z.object({
-  instagram: z.string().optional(),
-  tiktok: z.string().optional(),
-  youtube: z.string().optional(),
-  x: z.string().optional(),
-  facebook: z.string().optional(),
-  vimeo: z.string().optional(),
-  showFeed: zSocialPlatform.nullish(),
-});
-
-export const zUser = z.object({
-  id: z.string(),
-  name: z.string(),
-  email: z.email(),
-  phone: z.string().optional(),
-  roles: z.array(zRole),
-  neighborhood: z.string().optional(),
-  specialties: z.array(z.string()).optional(),
+export const zAccountProfile = z.object({
   bio: z.string().optional(),
-  avatarUrl: z.url().optional(),
-  socials: zSocials.optional(),
+  neighborhood: z.string().optional(),
+  specialties: z.string().optional(),
+});
+
+export const zAccountUser = zSessionUser.and(
+  z.object({
+    profile: zAccountProfile.optional(),
+    socialAccounts: z
+      .array(
+        z.object({
+          platform: z.string().optional(),
+          handle: z.string().optional(),
+          url: z.string().optional(),
+          showFeed: z.boolean().optional(),
+        }),
+      )
+      .optional(),
+  }),
+);
+
+export const zAccountUserEnvelope = z.object({
+  user: zAccountUser.optional(),
+});
+
+export const zUpdateAccountRequest = z.object({
+  name: z.string().min(2).max(80).optional(),
+  phone: z.string().min(8).max(24).optional(),
+  profile: z
+    .object({
+      bio: z.string().max(2000).optional(),
+      neighborhood: z.string().max(80).optional(),
+      specialties: z.string().max(200).optional(),
+    })
+    .optional(),
+});
+
+export const zAddRoleRequest = z.object({
+  role: z.enum(["renter", "owner", "talent"]),
+});
+
+export const zRegisterRequest = z.object({
+  name: z.string().min(2).max(80),
+  email: z.email(),
+  phone: z.string().min(8).max(24),
+  password: z.string().min(8).max(72),
+  roles: z
+    .array(z.enum(["renter", "owner", "talent"]))
+    .min(1)
+    .max(3),
+});
+
+export const zMagicLinkRequest = z.object({
+  email: z.email(),
+  callbackUrl: z.string().optional(),
+});
+
+export const zMagicLinkConsumeRequest = z.object({
+  token: z.string(),
+});
+
+export const zReplaceSocialRequest = z.object({
+  accounts: z.array(
+    z.object({
+      platform: z.enum([
+        "instagram",
+        "tiktok",
+        "youtube",
+        "x",
+        "facebook",
+        "vimeo",
+      ]),
+      handle: z.string(),
+      showFeed: z.boolean().optional(),
+    }),
+  ),
 });
 
 export const zLoginRequest = z.object({
   email: z.email(),
-  password: z.string().min(1),
+  password: z.string(),
 });
 
-export const zRegisterRequest = z.object({
-  name: z.string().min(2),
-  email: z.email(),
-  phone: z.string(),
-  password: z.string().min(8),
-  roles: z.array(zSelfServeRole).min(1),
+export const zCreateListingRequest = z.object({
+  title: z.string().min(3).max(120),
+  description: z.string().min(12).max(4000),
+  category: z.string().min(2).max(80),
+  neighborhood: z.string().min(2).max(80),
+  city: z.string().optional(),
+  state: z.string().optional(),
+  lat: z.number().gte(-90).lte(90).optional().default(6.5244),
+  lng: z.number().gte(-180).lte(180).optional().default(3.3792),
+  dayRateNgn: z.int().gt(0).lte(50000000),
+  serialNumber: z.string().max(80).optional(),
+  accessories: z.string().max(400).optional(),
 });
 
-export const zAuthResponse = z.object({
-  token: z.string(),
-  user: zUser,
+export const zCreateGearSaleRequest = z.object({
+  title: z.string().min(3).max(120),
+  description: z.string().min(12).max(4000),
+  category: z.string().min(2).max(80),
+  neighborhood: z.string().min(2).max(80),
+  city: z.string().optional(),
+  state: z.string().optional(),
+  lat: z.number().optional(),
+  lng: z.number().optional(),
+  salePriceNgn: z.int().gt(0),
+  serialNumber: z.string().optional(),
+  accessories: z.string().optional(),
 });
 
-export const zListingKind = z.enum(["location", "gear_rent", "gear_sale"]);
+export const zListingCard = z.object({
+  id: z.string().optional(),
+  kind: z.enum(["location", "gear", "gear_sale", "talent"]).optional(),
+  title: z.string().optional(),
+  description: z.string().optional(),
+  category: z.string().optional(),
+  neighborhood: z.string().optional(),
+  city: z.string().optional(),
+  state: z.string().optional(),
+  lat: z.number().optional(),
+  lng: z.number().optional(),
+  dayRateNgn: z.int().optional(),
+  salePriceNgn: z.int().optional(),
+  status: z.string().optional(),
+  serialNumber: z.string().nullish(),
+  accessories: z.string().nullish(),
+  photoUrl: z.string().nullish(),
+  distanceKm: z.number().nullish(),
+});
 
-export const zListingStatus = z.enum(["pending", "published", "archived"]);
+export const zPublicUser = z.object({
+  id: z.string().optional(),
+  name: z.string().optional(),
+  phone: z.string().nullish(),
+  profile: z.record(z.string(), z.unknown()).nullish(),
+});
 
-export const zLocationType = z.enum([
-  "studio",
-  "stage",
-  "apartment",
-  "house",
-  "beach",
-  "park",
-  "gallery",
-  "landmark",
-]);
-
-export const zGearCategory = z.enum([
-  "camera",
-  "lens",
-  "lighting",
-  "audio",
-  "grip",
-  "drone",
-  "monitor",
-  "power",
-  "other",
-]);
-
-export const zLocationDetails = z.object({
-  sizeSqm: z.int().optional(),
-  capacity: z.int().optional(),
-  amenities: z.array(z.string()).optional(),
-  rules: z.array(z.string()).optional(),
+export const zPlacePin = z.object({
+  id: z.string().optional(),
+  title: z.string().optional(),
+  description: z.string().optional(),
+  category: z.string().optional(),
+  neighborhood: z.string().optional(),
+  lat: z.number().optional(),
+  lng: z.number().optional(),
   accessNotes: z.string().optional(),
 });
 
-export const zGearDetails = z.object({
-  brand: z.string().optional(),
-  model: z.string().optional(),
-  serial: z.string().optional(),
-  kitContents: z.array(z.string()).optional(),
-  condition: z.enum(["new", "like_new", "good", "fair"]).optional(),
+export const zCatalogHome = z.object({
+  pins: z.int().optional(),
+  locations: z.array(zListingCard).optional(),
+  gear: z.array(zListingCard).optional(),
+  gearSale: z.array(zListingCard).optional(),
+  talent: z.array(zListingCard).optional(),
 });
 
-export const zListing = z.object({
-  id: z.string(),
-  kind: zListingKind,
-  status: zListingStatus,
-  title: z.string(),
-  description: z.string(),
-  category: z.string(),
-  place: zPlace,
-  owner: zUserSummary,
-  photos: z.array(zPhoto),
-  dayRateNgn: z.int().gte(0).optional(),
-  askingPriceNgn: z.int().gte(0).optional(),
-  location: zLocationDetails.optional(),
-  gear: zGearDetails.optional(),
-  createdAt: z.iso.datetime(),
+export const zPlacesPage = z.object({
+  country: z.string().optional(),
+  states: z.array(z.string()).optional(),
+  places: z
+    .array(
+      z.object({
+        city: z.string().optional(),
+        state: z.string().optional(),
+        lat: z.number().optional(),
+        lng: z.number().optional(),
+        radiusKm: z.number().optional(),
+      }),
+    )
+    .optional(),
 });
 
-export const zListingInput = z.object({
-  kind: zListingKind,
-  title: z.string().min(3).max(120),
-  description: z.string().min(10).max(4000),
-  category: z.string(),
-  place: z.object({
-    city: z.string(),
-    neighborhood: z.string(),
-    lat: z.number(),
-    lng: z.number(),
-  }),
-  photoUrls: z.array(z.url()).optional(),
-  dayRateNgn: z.int().gte(0).optional(),
-  askingPriceNgn: z.int().gte(0).optional(),
-  location: zLocationDetails.optional(),
-  gear: zGearDetails.optional(),
+export const zLocationsPage = z.object({
+  listings: z.array(zListingCard).optional(),
+  pins: z.array(zPlacePin).optional(),
 });
 
-export const zListingPage = z.object({
-  items: z.array(zListing),
-  page: z.int(),
-  pageSize: z.int(),
-  total: z.int(),
+export const zListingsPage = z.object({
+  listings: z.array(zListingCard).optional(),
 });
 
-export const zScoutPin = z.object({
-  id: z.string(),
-  title: z.string(),
-  category: zLocationType,
-  note: z.string().optional(),
-  photoUrl: z.url().optional(),
-  lat: z.number(),
-  lng: z.number(),
-  city: z.string().optional(),
-  state: z.string().optional(),
+export const zListingEnvelope = z.object({
+  listing: zListingCard.optional(),
 });
 
-export const zTalentRole = z.enum([
-  "actor",
-  "model",
-  "extra",
-  "dp",
-  "director",
-  "voice",
-  "sound",
-  "makeup",
-  "stylist",
-  "editor",
-  "other",
-]);
-
-export const zTalent = z.object({
-  id: z.string(),
-  user: zUserSummary,
-  status: zListingStatus,
-  roles: z.array(zTalentRole),
-  headline: z.string(),
-  bio: z.string().optional(),
-  specialties: z.array(z.string()).optional(),
-  dayRateNgn: z.int().gte(0).optional(),
-  phone: z.string().optional(),
-  place: zPlace,
-  photos: z.array(zPhoto).optional(),
-  socials: zSocials.optional(),
+export const zListingDetail = z.object({
+  listing: zListingCard
+    .and(
+      z.object({
+        owner: zPublicUser.optional(),
+      }),
+    )
+    .optional(),
 });
 
-export const zPublicProfile = z.object({
-  id: z.string(),
-  name: z.string(),
-  roles: z.array(zRole),
+export const zCastCall = z.object({
+  id: z.string().optional(),
+  title: z.string().optional(),
+  description: z.string().optional(),
+  roleNeeded: z.string().optional(),
   neighborhood: z.string().optional(),
-  bio: z.string().optional(),
-  specialties: z.array(z.string()).optional(),
-  avatarUrl: z.url().optional(),
-  socials: zSocials.optional(),
-  talent: zTalent.optional(),
-  listings: z.array(zListing).optional(),
+  shootDate: z.iso.datetime().nullish(),
+  status: z.string().optional(),
 });
 
-export const zTalentInput = z.object({
-  roles: z.array(zTalentRole).min(1),
-  headline: z.string().max(120),
-  bio: z.string().max(2000).optional(),
-  specialties: z.array(z.string()).optional(),
-  dayRateNgn: z.int().gte(0).optional(),
-  city: z.string(),
-  neighborhood: z.string(),
-  lat: z.number().optional(),
-  lng: z.number().optional(),
-  photoUrls: z.array(z.url()).optional(),
+export const zCastHome = z.object({
+  talent: z.array(zListingCard).optional(),
+  calls: z.array(zCastCall).optional(),
 });
 
-export const zTalentPage = z.object({
-  items: z.array(zTalent),
-  page: z.int(),
-  pageSize: z.int(),
-  total: z.int(),
-});
-
-export const zCastingCall = z.object({
-  id: z.string(),
-  title: z.string(),
-  brief: z.string(),
-  roleNeeded: zTalentRole,
-  place: zPlace,
-  shootDate: z.iso.date().optional(),
-  postedBy: zUserSummary,
-  createdAt: z.iso.datetime(),
-  interestCount: z.int().gte(0),
-  viewerHasInterest: z.boolean().optional(),
-});
-
-export const zCastingCallInput = z.object({
-  title: z.string().min(3).max(120),
-  brief: z.string().min(10).max(4000),
-  roleNeeded: zTalentRole,
-  city: z.string(),
-  neighborhood: z.string(),
-  shootDate: z.iso.date().optional(),
-});
-
-export const zCastingInterest = z.object({
-  id: z.string(),
-  callId: z.string(),
-  user: zUserSummary,
-  message: z.string(),
-  createdAt: z.iso.datetime(),
-});
-
-export const zCastingCallPage = z.object({
-  items: z.array(zCastingCall),
-  page: z.int(),
-  pageSize: z.int(),
-  total: z.int(),
-});
-
-/**
- * location → booking, gear_rent → rental, talent → hire
- */
-export const zBookingType = z.enum(["booking", "rental", "hire"]);
-
-export const zBookingStatus = z.enum([
-  "requested",
-  "accepted",
-  "declined",
-  "cancelled",
-  "paid",
-  "in_progress",
-  "completed",
-]);
-
-export const zPaymentStatus = z.enum([
-  "unpaid",
-  "pending_confirmation",
-  "paid",
-  "refunded",
-]);
-
-/**
- * Exactly one of `listingId` or `talentId`
- */
-export const zBookingRequest = z.object({
-  listingId: z.string().optional(),
-  talentId: z.string().optional(),
-  startDate: z.iso.date(),
-  endDate: z.iso.date(),
-  note: z.string().max(1000).optional(),
-});
-
-export const zMessage = z.object({
-  id: z.string(),
-  author: zUserSummary,
-  body: z.string(),
-  createdAt: z.iso.datetime(),
-});
-
-export const zHandoff = z.object({
-  id: z.string(),
-  type: z.enum(["pickup", "return"]),
-  condition: z.string().optional(),
-  recordedBy: zUserSummary,
-  createdAt: z.iso.datetime(),
-});
-
-export const zBooking = z.object({
-  id: z.string(),
-  type: zBookingType,
-  status: zBookingStatus,
-  paymentStatus: zPaymentStatus,
-  listing: zListing.optional(),
-  talent: zTalent.optional(),
-  startDate: z.iso.date(),
-  endDate: z.iso.date(),
-  days: z.int().gte(1),
-  dayRateNgn: z.int().optional(),
-  totalNgn: z.int(),
-  note: z.string().optional(),
-  requester: zUserSummary,
-  provider: zUserSummary,
-  handoffs: z.array(zHandoff).optional(),
-  createdAt: z.iso.datetime(),
-  updatedAt: z.iso.datetime().optional(),
-});
-
-export const zBookingPage = z.object({
-  items: z.array(zBooking),
-  page: z.int(),
-  pageSize: z.int(),
-  total: z.int(),
-});
-
-export const zPlanRequest = z.object({
-  brief: z.string().min(10).max(4000),
-  title: z.string().max(120).optional(),
-  state: z.string().optional(),
-  city: z.string().optional(),
-  neighborhood: z.string().optional(),
-  shootDate: z.iso.date().optional(),
-  budgetNgn: z.int().gte(0).optional(),
-});
-
-export const zPlanRequirementCategory = z.enum([
-  "location",
-  "camera",
-  "lenses",
-  "lighting",
-  "audio",
-  "grip",
-  "cast",
-  "crew",
-  "other",
-]);
-
-export const zPlanMatch = z.object({
-  kind: z.enum(["listing", "talent"]),
-  id: z.string(),
-  title: z.string(),
-  dayRateNgn: z.int().optional(),
-  distanceKm: z.number().optional(),
-  photoUrl: z.url().optional(),
-});
-
-/**
- * Professional kit or people the brief needs, even if nothing is listed yet
- */
-export const zPlanRequirement = z.object({
-  category: zPlanRequirementCategory,
-  name: z.string(),
-  detail: z.string().optional(),
-  matches: z.array(zPlanMatch).optional(),
-});
-
-export const zPlanTimelineItem = z.object({
-  label: z.string(),
-  date: z.iso.date().optional(),
-  notes: z.string().optional(),
-});
-
-export const zPlanBudgetLine = z.object({
-  label: z.string(),
-  category: zPlanRequirementCategory.optional(),
-  amountNgn: z.int(),
-});
-
-export const zPlanSummary = z.object({
-  id: z.string(),
-  title: z.string(),
-  createdAt: z.iso.datetime(),
-});
-
-/**
- * Mirrors the Figma plan card tabs (Overview, Location, Rent Gear, Talent, Timeline, Budget, Note)
- */
-export const zPlan = z.object({
-  id: z.string(),
-  title: z.string(),
-  brief: z.string(),
-  overview: z.string(),
-  place: zPlace.optional(),
-  shootDate: z.iso.date().optional(),
-  requirements: z.array(zPlanRequirement),
-  shotTypes: z.array(z.string()),
-  timeline: z.array(zPlanTimelineItem).optional(),
-  budget: z.array(zPlanBudgetLine).optional(),
-  budgetTotalNgn: z.int().optional(),
-  notes: z.string().optional(),
-  createdAt: z.iso.datetime(),
-});
-
-export const zPage = z.int().gte(1).default(1);
-
-export const zPageSize = z.int().gte(1).lte(100).default(24);
-
-export const zState = z.string();
-
-/**
- * City slug
- */
-export const zCity2 = z.string();
-
-/**
- * Production area origin; enables distance sorting
- */
-export const zLat = z.number();
-
-export const zLng = z.number();
-
-export const zUserId = z.string();
-
-export const zListingId = z.string();
-
-export const zCallId = z.string();
-
-export const zBookingId = z.string();
-
-export const zLoginBody = zLoginRequest;
-
-/**
- * Signed in
- */
-export const zLoginResponse = zAuthResponse;
-
-export const zRegisterBody = zRegisterRequest;
-
-/**
- * Account created and signed in
- */
-export const zRegisterResponse = zAuthResponse;
-
-export const zRequestMagicLinkBody = z.object({
-  email: z.email(),
-  redirectTo: z.string().optional(),
-});
-
-export const zVerifyMagicLinkBody = z.object({
-  token: z.string(),
-});
-
-/**
- * Signed in
- */
-export const zVerifyMagicLinkResponse = zAuthResponse;
-
-/**
- * Providers (empty when none configured)
- */
-export const zListAuthProvidersResponse = z.array(
+export const zCastCallListed = zCastCall.and(
   z.object({
-    id: z.string(),
-    name: z.string(),
-    authorizeUrl: z.url(),
+    applications: z.int().optional(),
+    owner: zPublicUser.optional(),
   }),
 );
 
+export const zCastCallsPage = z.object({
+  calls: z.array(zCastCallListed).optional(),
+});
+
+export const zCastingCallRequest = z.object({
+  title: z.string().min(4).max(120),
+  description: z.string().min(12).max(4000),
+  roleNeeded: z.string().optional().default("actor"),
+  neighborhood: z.string().optional().default("Lagos"),
+  shootDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(),
+});
+
+export const zApplyRequest = z.object({
+  message: z.string().min(1).max(2000),
+});
+
+export const zIdOnlyCall = z.object({
+  call: z
+    .object({
+      id: z.string().optional(),
+    })
+    .optional(),
+});
+
+export const zBookingRequest = z.object({
+  listingId: z.string().min(8).max(64),
+  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  note: z.string().max(2000).optional(),
+});
+
+export const zIdOnlyBooking = z.object({
+  booking: z
+    .object({
+      id: z.string().optional(),
+    })
+    .optional(),
+});
+
+export const zBookingSummary = z.object({
+  id: z.string().optional(),
+  status: z.string().optional(),
+  totalNgn: z.int().optional(),
+  startDate: z.iso.datetime().optional(),
+  endDate: z.iso.datetime().optional(),
+  listing: zListingCard.optional(),
+  renter: zPublicUser.optional(),
+  owner: zPublicUser.optional(),
+});
+
+export const zBookingsPage = z.object({
+  bookings: z.array(zBookingSummary).optional(),
+});
+
+export const zBookingThread = z.object({
+  booking: z
+    .object({
+      id: z.string().optional(),
+      status: z.string().optional(),
+      messages: z.array(z.record(z.string(), z.unknown())).optional(),
+      handoffs: z.array(z.record(z.string(), z.unknown())).optional(),
+    })
+    .optional(),
+});
+
+export const zMessageRequest = z.object({
+  body: z.string().min(1).max(2000),
+});
+
+export const zHandoffForm = z.object({
+  phase: z.string().optional().default("out"),
+  notes: z.string().optional(),
+  serialChecked: z.string().optional(),
+  accessoriesComplete: z.string().optional(),
+  existingDamageNoted: z.string().optional(),
+  functionTest: z.string().optional(),
+  photo: z.string().optional(),
+});
+
+export const zPlannerRequest = z.object({
+  idea: z.string().min(4).max(2000),
+  area: z.string().max(80).optional(),
+  conversationId: z.string().optional(),
+});
+
+export const zPlannerCreated = z.object({
+  conversationId: z.string().optional(),
+  result: z
+    .object({
+      reply: z.string().optional(),
+      citations: z.array(z.record(z.string(), z.unknown())).optional(),
+      suggestions: z.array(z.record(z.string(), z.unknown())).optional(),
+      estimate: z.record(z.string(), z.unknown()).optional(),
+      kitNeeds: z.array(z.record(z.string(), z.unknown())).optional(),
+      shootKind: z.string().optional(),
+      shots: z.array(z.string()).optional(),
+    })
+    .optional(),
+});
+
+export const zPlannerConversation = z.object({
+  conversation: z
+    .object({
+      id: z.string().optional(),
+      title: z.string().optional(),
+      messages: z.array(z.record(z.string(), z.unknown())).optional(),
+    })
+    .optional(),
+});
+
+export const zAdminOps = z.object({
+  pins: z.int().optional(),
+  pending: z.array(z.record(z.string(), z.unknown())).optional(),
+  bookings: z.array(z.record(z.string(), z.unknown())).optional(),
+  conversations: z.array(z.record(z.string(), z.unknown())).optional(),
+});
+
+export const zReviewRequest = z.object({
+  status: z.enum(["published", "rejected"]),
+});
+
+export const zPinRequest = z.object({
+  title: z.string().min(2).max(120),
+  description: z.string().min(8).max(4000),
+  category: z.string().optional().default("landmark"),
+  neighborhood: z.string(),
+  lat: z.number().optional().default(6.5244),
+  lng: z.number().optional().default(3.3792),
+  accessNotes: z.string().max(2000).optional(),
+});
+
+export const zIssueRequest = z.object({
+  body: z.string().max(2000),
+});
+
+export const zOk = z.object({
+  ok: z.boolean().optional(),
+});
+
 /**
- * Token revoked
+ * API is up
  */
-export const zLogoutResponse = z.void();
+export const zGetHealthResponse = zHealth;
+
+export const zPostV1AuthRegisterBody = zRegisterRequest;
+
+/**
+ * Created and signed in
+ */
+export const zPostV1AuthRegisterResponse = zSessionUserEnvelope;
+
+export const zPostV1AuthLoginBody = zLoginRequest;
+
+/**
+ * Signed in
+ */
+export const zPostV1AuthLoginResponse = zSessionUserEnvelope;
+
+/**
+ * Cookie cleared
+ */
+export const zPostV1AuthLogoutResponse = z.void();
 
 /**
  * Current user
  */
-export const zGetCurrentUserResponse = zUser;
-
-export const zUpdateProfileBody = zProfileUpdate;
+export const zGetV1AuthMeResponse = zSessionUserEnvelope;
 
 /**
- * Updated user
+ * OK
  */
-export const zUpdateProfileResponse = zUser;
+export const zGetV1AuthSsoResponse = zOk;
 
-export const zAddRoleBody = z.object({
-  role: zSelfServeRole,
+export const zPostV1AuthEmailBody = zMagicLinkRequest;
+
+/**
+ * OK
+ */
+export const zPostV1AuthEmailResponse = zOk;
+
+export const zPostV1AuthEmailConsumeBody = zMagicLinkConsumeRequest;
+
+/**
+ * Signed in
+ */
+export const zPostV1AuthEmailConsumeResponse = zSessionUserEnvelope;
+
+export const zGetV1AuthOauthByProviderPath = z.object({
+  provider: z.enum(["google", "facebook", "instagram", "x"]),
+});
+
+export const zGetV1AuthOauthByProviderQuery = z.object({
+  callbackUrl: z.string().optional(),
 });
 
 /**
- * Updated user
+ * OK
  */
-export const zAddRoleResponse = zUser;
+export const zGetV1AuthOauthByProviderResponse = zOk;
 
-export const zUpdateSocialsBody = zSocials;
-
-/**
- * Updated socials
- */
-export const zUpdateSocialsResponse = zSocials;
-
-export const zListMyListingsQuery = z.object({
-  page: z.int().gte(1).optional().default(1),
-  pageSize: z.int().gte(1).lte(100).optional().default(24),
+export const zGetV1AuthOauthByProviderCallbackPath = z.object({
+  provider: z.string(),
 });
 
 /**
- * My listings
+ * Current user
  */
-export const zListMyListingsResponse = zListingPage;
+export const zGetV1AuthSessionResponse = zSessionUserEnvelope;
 
-export const zGetPublicProfilePath = z.object({
-  userId: z.string(),
+/**
+ * Account plus profile
+ */
+export const zGetV1UsersMeResponse = zAccountUserEnvelope;
+
+export const zPatchV1UsersMeBody = zUpdateAccountRequest;
+
+/**
+ * Updated account
+ */
+export const zPatchV1UsersMeResponse = zAccountUserEnvelope;
+
+export const zPutV1UsersMeSocialBody = zReplaceSocialRequest;
+
+/**
+ * Account plus profile
+ */
+export const zPutV1UsersMeSocialResponse = zAccountUserEnvelope;
+
+export const zGetV1UsersByIdPath = z.object({
+  id: z.string(),
 });
 
 /**
- * Public profile
+ * OK
  */
-export const zGetPublicProfileResponse = zPublicProfile;
+export const zGetV1UsersByIdResponse = zOk;
+
+export const zGetV1UsersByIdFeedPath = z.object({
+  id: z.string(),
+});
+
+export const zGetV1UsersByIdFeedQuery = z.object({
+  platform: z
+    .enum(["instagram", "tiktok", "youtube", "x", "facebook", "vimeo"])
+    .optional(),
+});
 
 /**
- * Cities
+ * OK
  */
-export const zListCitiesResponse = z.array(zCity);
+export const zGetV1UsersByIdFeedResponse = zOk;
 
-export const zListListingsQuery = z.object({
-  kind: zListingKind.optional(),
-  category: z.string().optional(),
-  state: z.string().optional(),
-  city: z.string().optional(),
+export const zPostV1UsersMeRolesBody = zAddRoleRequest;
+
+/**
+ * Account with new role
+ */
+export const zPostV1UsersMeRolesResponse = zAccountUserEnvelope;
+
+/**
+ * Cities with default radius
+ */
+export const zGetV1CatalogPlacesResponse = zPlacesPage;
+
+export const zGetV1CatalogHomeQuery = z.object({
+  scope: z.enum(["country", "state", "metro"]).optional(),
+  state: z.string().max(80).optional(),
+  city: z.string().max(80).optional(),
   lat: z.number().optional(),
   lng: z.number().optional(),
-  q: z.string().optional(),
-  minRateNgn: z.int().gte(0).optional(),
-  maxRateNgn: z.int().gte(0).optional(),
-  page: z.int().gte(1).optional().default(1),
-  pageSize: z.int().gte(1).lte(100).optional().default(24),
+  radiusKm: z.number().gte(1).lte(250).optional(),
 });
 
 /**
- * Listings
+ * Nearest published locations, rental kit, sale kit, and talent plus pin count
  */
-export const zListListingsResponse = zListingPage;
+export const zGetV1CatalogHomeResponse = zCatalogHome;
 
-export const zCreateListingBody = zListingInput;
+export const zGetV1LocationsQuery = z.object({
+  q: z.string().max(80).optional(),
+  neighborhood: z.string().max(80).optional(),
+  category: z.string().max(80).optional(),
+  scope: z.enum(["country", "state", "metro"]).optional(),
+  state: z.string().max(80).optional(),
+  city: z.string().max(80).optional(),
+  lat: z.number().optional(),
+  lng: z.number().optional(),
+  radiusKm: z.number().gte(1).lte(250).optional(),
+});
+
+/**
+ * Listings and pins
+ */
+export const zGetV1LocationsResponse = zLocationsPage;
+
+export const zPostV1LocationsBody = zCreateListingRequest;
+
+/**
+ * Created listing
+ */
+export const zPostV1LocationsResponse = zListingEnvelope;
+
+export const zGetV1GearQuery = z.object({
+  q: z.string().max(80).optional(),
+  category: z.string().max(80).optional(),
+  neighborhood: z.string().max(80).optional(),
+  scope: z.enum(["country", "state", "metro"]).optional(),
+  state: z.string().max(80).optional(),
+  city: z.string().max(80).optional(),
+  lat: z.number().optional(),
+  lng: z.number().optional(),
+  radiusKm: z.number().gte(1).lte(250).optional(),
+});
+
+/**
+ * Gear listings
+ */
+export const zGetV1GearResponse = zListingsPage;
+
+export const zPostV1GearBody = zCreateListingRequest;
+
+/**
+ * Created listing
+ */
+export const zPostV1GearResponse = zListingEnvelope;
+
+export const zGetV1GearSaleQuery = z.object({
+  q: z.string().max(80).optional(),
+  category: z.string().max(80).optional(),
+  neighborhood: z.string().max(80).optional(),
+  scope: z.enum(["country", "state", "metro"]).optional(),
+  state: z.string().max(80).optional(),
+  city: z.string().max(80).optional(),
+  lat: z.number().optional(),
+  lng: z.number().optional(),
+  radiusKm: z.number().gte(1).lte(250).optional(),
+});
+
+/**
+ * Sale listings
+ */
+export const zGetV1GearSaleResponse = zListingsPage;
+
+export const zPostV1GearSaleBody = zCreateGearSaleRequest;
+
+/**
+ * Created listing
+ */
+export const zPostV1GearSaleResponse = zListingEnvelope;
+
+export const zGetV1ListingsByIdPath = z.object({
+  id: z.string(),
+});
+
+/**
+ * Listing with owner
+ */
+export const zGetV1ListingsByIdResponse = zListingDetail;
+
+/**
+ * Published talent and 5 newest open calls
+ */
+export const zGetV1CastResponse = zCastHome;
+
+export const zGetV1CastTalentByIdPath = z.object({
+  id: z.string(),
+});
+
+/**
+ * Talent listing
+ */
+export const zGetV1CastTalentByIdResponse = zListingDetail;
+
+export const zPostV1CastTalentBody = zCreateListingRequest;
+
+/**
+ * Created listing
+ */
+export const zPostV1CastTalentResponse = zListingEnvelope;
+
+/**
+ * Calls with application counts
+ */
+export const zGetV1CastCallsResponse = zCastCallsPage;
+
+export const zPostV1CastCallsBody = zCastingCallRequest;
 
 /**
  * Created
  */
-export const zCreateListingResponse = zListing;
+export const zPostV1CastCallsResponse = zIdOnlyCall;
 
-export const zArchiveListingPath = z.object({
-  listingId: z.string(),
+export const zPostV1CastCallsByIdApplyBody = zApplyRequest;
+
+export const zPostV1CastCallsByIdApplyPath = z.object({
+  id: z.string(),
 });
 
 /**
- * Archived
+ * OK
  */
-export const zArchiveListingResponse = z.void();
+export const zPostV1CastCallsByIdApplyResponse = zOk;
 
-export const zGetListingPath = z.object({
-  listingId: z.string(),
+/**
+ * Renter or owner bookings
+ */
+export const zGetV1BookingsResponse = zBookingsPage;
+
+export const zPostV1BookingsBody = zBookingRequest;
+
+/**
+ * Created
+ */
+export const zPostV1BookingsResponse = zIdOnlyBooking;
+
+export const zGetV1BookingsByIdPath = z.object({
+  id: z.string(),
 });
 
 /**
- * Listing
+ * Messages and handoffs
  */
-export const zGetListingResponse = zListing;
+export const zGetV1BookingsByIdResponse = zBookingThread;
 
-export const zUpdateListingBody = zListingInput;
-
-export const zUpdateListingPath = z.object({
-  listingId: z.string(),
+export const zPostV1BookingsByIdAcceptPath = z.object({
+  id: z.string(),
 });
 
 /**
- * Updated
+ * OK
  */
-export const zUpdateListingResponse = zListing;
+export const zPostV1BookingsByIdAcceptResponse = zOk;
 
-export const zGetListingAvailabilityPath = z.object({
-  listingId: z.string(),
-});
-
-export const zGetListingAvailabilityQuery = z.object({
-  from: z.iso.date(),
-  to: z.iso.date(),
+export const zPostV1BookingsByIdDeclinePath = z.object({
+  id: z.string(),
 });
 
 /**
- * Booked date ranges in the window
+ * OK
  */
-export const zGetListingAvailabilityResponse = z.array(zDateRange);
+export const zPostV1BookingsByIdDeclineResponse = zOk;
 
-export const zListScoutPinsQuery = z.object({
-  state: z.string().optional(),
-  city: z.string().optional(),
-  category: zLocationType.optional(),
+export const zPostV1BookingsByIdMarkPaidPath = z.object({
+  id: z.string(),
 });
 
 /**
- * Pins
+ * OK
  */
-export const zListScoutPinsResponse = z.array(zScoutPin);
+export const zPostV1BookingsByIdMarkPaidResponse = zOk;
 
-export const zListTalentQuery = z.object({
-  role: zTalentRole.optional(),
-  state: z.string().optional(),
-  city: z.string().optional(),
-  lat: z.number().optional(),
-  lng: z.number().optional(),
-  q: z.string().optional(),
-  page: z.int().gte(1).optional().default(1),
-  pageSize: z.int().gte(1).lte(100).optional().default(24),
+export const zPostV1BookingsByIdMessagesBody = zMessageRequest;
+
+export const zPostV1BookingsByIdMessagesPath = z.object({
+  id: z.string(),
 });
 
 /**
- * Talent
+ * OK
  */
-export const zListTalentResponse = zTalentPage;
+export const zPostV1BookingsByIdMessagesResponse = zOk;
 
-export const zGetTalentPath = z.object({
-  talentId: z.string(),
+export const zPostV1BookingsByIdHandoffBody = zHandoffForm;
+
+export const zPostV1BookingsByIdHandoffPath = z.object({
+  id: z.string(),
 });
 
 /**
- * Talent profile
+ * OK
  */
-export const zGetTalentResponse = zTalent;
+export const zPostV1BookingsByIdHandoffResponse = zOk;
 
-export const zUpsertMyTalentProfileBody = zTalentInput;
+export const zPostV1PlannerBody = zPlannerRequest;
 
 /**
- * Saved (pending until admin publish)
+ * Conversation plus citations
  */
-export const zUpsertMyTalentProfileResponse = zTalent;
+export const zPostV1PlannerResponse = zPlannerCreated;
 
-export const zListCastingCallsQuery = z.object({
-  role: zTalentRole.optional(),
-  state: z.string().optional(),
-  city: z.string().optional(),
-  page: z.int().gte(1).optional().default(1),
-  pageSize: z.int().gte(1).lte(100).optional().default(24),
+export const zGetV1PlannerConversationsByIdPath = z.object({
+  id: z.string(),
 });
 
 /**
- * Calls
+ * Conversation
  */
-export const zListCastingCallsResponse = zCastingCallPage;
-
-export const zCreateCastingCallBody = zCastingCallInput;
+export const zGetV1PlannerConversationsByIdResponse = zPlannerConversation;
 
 /**
- * Published
+ * Pending listings, open bookings, recent plans
  */
-export const zCreateCastingCallResponse = zCastingCall;
+export const zGetV1AdminOpsResponse = zAdminOps;
 
-export const zGetCastingCallPath = z.object({
-  callId: z.string(),
-});
+export const zPostV1AdminListingsByIdReviewBody = zReviewRequest;
 
-/**
- * Call
- */
-export const zGetCastingCallResponse = zCastingCall;
-
-export const zExpressInterestBody = z.object({
-  message: z.string().max(1000),
-});
-
-export const zExpressInterestPath = z.object({
-  callId: z.string(),
+export const zPostV1AdminListingsByIdReviewPath = z.object({
+  id: z.string(),
 });
 
 /**
- * Interest recorded
+ * OK
  */
-export const zExpressInterestResponse = zCastingInterest;
+export const zPostV1AdminListingsByIdReviewResponse = zOk;
 
-export const zListBookingsQuery = z.object({
-  as: z.enum(["requester", "provider"]).optional(),
-  status: zBookingStatus.optional(),
-  page: z.int().gte(1).optional().default(1),
-  pageSize: z.int().gte(1).lte(100).optional().default(24),
-});
+export const zPostV1AdminPinsBody = zPinRequest;
 
 /**
- * Bookings
+ * OK
  */
-export const zListBookingsResponse = zBookingPage;
+export const zPostV1AdminPinsResponse = zOk;
 
-export const zCreateBookingBody = zBookingRequest;
+export const zPostV1IssuesBody = zIssueRequest;
 
 /**
- * Requested
+ * Logged
  */
-export const zCreateBookingResponse = zBooking;
-
-export const zGetBookingPath = z.object({
-  bookingId: z.string(),
-});
-
-/**
- * Booking
- */
-export const zGetBookingResponse = zBooking;
-
-export const zTransitionBookingBody = z.object({
-  action: z.enum([
-    "accept",
-    "decline",
-    "cancel",
-    "confirm_payment",
-    "complete",
-  ]),
-  reason: z.string().max(500).optional(),
-});
-
-export const zTransitionBookingPath = z.object({
-  bookingId: z.string(),
-});
-
-/**
- * Updated booking
- */
-export const zTransitionBookingResponse = zBooking;
-
-export const zListBookingMessagesPath = z.object({
-  bookingId: z.string(),
-});
-
-/**
- * Thread, oldest first
- */
-export const zListBookingMessagesResponse = z.array(zMessage);
-
-export const zSendBookingMessageBody = z.object({
-  body: z.string().min(1).max(2000),
-});
-
-export const zSendBookingMessagePath = z.object({
-  bookingId: z.string(),
-});
-
-/**
- * Sent
- */
-export const zSendBookingMessageResponse = zMessage;
-
-export const zRecordHandoffBody = z.object({
-  type: z.enum(["pickup", "return"]),
-  condition: z.string().max(500).optional(),
-});
-
-export const zRecordHandoffPath = z.object({
-  bookingId: z.string(),
-});
-
-/**
- * Recorded
- */
-export const zRecordHandoffResponse = zHandoff;
-
-/**
- * My saved plans, newest first
- */
-export const zListPlansResponse = z.array(zPlanSummary);
-
-export const zCreatePlanBody = zPlanRequest;
-
-/**
- * Plan
- */
-export const zCreatePlanResponse = zPlan;
-
-export const zGetPlanPath = z.object({
-  planId: z.string(),
-});
-
-/**
- * Plan
- */
-export const zGetPlanResponse = zPlan;
-
-export const zReportIssueBody = z.object({
-  message: z.string().min(3).max(2000),
-  pageUrl: z.string().optional(),
-});
+export const zPostV1IssuesResponse = z.void();

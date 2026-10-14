@@ -5,8 +5,10 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   images: {
-    // Placeholder photos in mock data. Add the API's media host here.
     remotePatterns: [
+      // Listing photos served by the API.
+      { protocol: "https", hostname: "images.unsplash.com" },
+      // Decorative marketing placeholders (src/lib/placeholder.ts).
       { protocol: "https", hostname: "picsum.photos" },
       { protocol: "https", hostname: "fastly.picsum.photos" },
     ],

@@ -20,8 +20,9 @@ export async function unwrap<T>(result: Promise<SdkResult<T>>): Promise<T> {
   const { data, error, response } = await result;
   if (error === undefined && response?.ok) return data as T;
 
+  // API error body: { error: string, code?: "validation_error" | "not_found" | ... }
   const message =
-    (error as { message?: string } | undefined)?.message ??
+    (error as { error?: string } | undefined)?.error ??
     (response ? `Request failed (${response.status})` : "Could not reach the server");
   throw new ApiError(response?.status ?? 0, message, error);
 }

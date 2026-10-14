@@ -9,7 +9,6 @@ const config: CatalogConfig = {
   kind: "location",
   basePath: "/locations",
   searchPlaceholder: "Search studios, houses, neighborhoods…",
-  scoutPins: true,
   chips: [
     { label: "All" },
     { label: "Studio", value: "studio" },

@@ -1,3 +1,27 @@
+import {
+  BecomeProvider,
+  BiggerThanCamera,
+  Categories,
+  ClosingCta,
+  Faq,
+  Featured,
+  Hero,
+  PlannerTeaser,
+  Steps,
+} from "@/components/landing/sections";
+
 export default function HomePage() {
-  return <h1>ArtMostSphere</h1>;
+  return (
+    <>
+      <Hero />
+      <Categories />
+      <Featured />
+      <Steps />
+      <PlannerTeaser />
+      <BecomeProvider />
+      <BiggerThanCamera />
+      <Faq />
+      <ClosingCta />
+    </>
+  );
 }

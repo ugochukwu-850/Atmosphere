@@ -8,7 +8,7 @@ import { PageHero } from "@/components/catalog/PageHero";
 export const metadata: Metadata = { title: "Rent gear" };
 
 const config: CatalogConfig = {
-  kind: "gear_rent",
+  kind: "gear",
   basePath: "/gear",
   searchPlaceholder: "Search cameras, lenses, lights…",
   chips: GEAR_CHIPS,

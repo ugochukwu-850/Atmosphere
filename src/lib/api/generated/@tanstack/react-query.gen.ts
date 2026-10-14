@@ -2,247 +2,188 @@
 
 import {
   type DefaultError,
-  type InfiniteData,
-  infiniteQueryOptions,
   queryOptions,
   type UseMutationOptions,
 } from "@tanstack/react-query";
 
 import { client } from "../client.gen";
 import {
-  addRole,
-  archiveListing,
-  createBooking,
-  createCastingCall,
-  createListing,
-  createPlan,
-  expressInterest,
-  getBooking,
-  getCastingCall,
-  getCurrentUser,
-  getListing,
-  getListingAvailability,
-  getPlan,
-  getPublicProfile,
-  getTalent,
-  listAuthProviders,
-  listBookingMessages,
-  listBookings,
-  listCastingCalls,
-  listCities,
-  listListings,
-  listMyListings,
-  listPlans,
-  listScoutPins,
-  listTalent,
-  login,
-  logout,
+  getHealth,
+  getV1AdminOps,
+  getV1AuthMe,
+  getV1AuthOauthByProvider,
+  getV1AuthOauthByProviderCallback,
+  getV1AuthSession,
+  getV1AuthSso,
+  getV1Bookings,
+  getV1BookingsById,
+  getV1Cast,
+  getV1CastCalls,
+  getV1CastTalentById,
+  getV1CatalogHome,
+  getV1CatalogPlaces,
+  getV1Gear,
+  getV1GearSale,
+  getV1ListingsById,
+  getV1Locations,
+  getV1PlannerConversationsById,
+  getV1UsersById,
+  getV1UsersByIdFeed,
+  getV1UsersMe,
   type Options,
-  recordHandoff,
-  register,
-  reportIssue,
-  requestMagicLink,
-  sendBookingMessage,
-  transitionBooking,
-  updateListing,
-  updateProfile,
-  updateSocials,
-  upsertMyTalentProfile,
-  verifyMagicLink,
+  patchV1UsersMe,
+  postV1AdminListingsByIdReview,
+  postV1AdminPins,
+  postV1AuthEmail,
+  postV1AuthEmailConsume,
+  postV1AuthLogin,
+  postV1AuthLogout,
+  postV1AuthRegister,
+  postV1Bookings,
+  postV1BookingsByIdAccept,
+  postV1BookingsByIdDecline,
+  postV1BookingsByIdHandoff,
+  postV1BookingsByIdMarkPaid,
+  postV1BookingsByIdMessages,
+  postV1CastCalls,
+  postV1CastCallsByIdApply,
+  postV1CastTalent,
+  postV1Gear,
+  postV1GearSale,
+  postV1Issues,
+  postV1Locations,
+  postV1Planner,
+  postV1UsersMeRoles,
+  putV1UsersMeSocial,
 } from "../sdk.gen";
 import type {
-  AddRoleData,
-  AddRoleResponse,
-  ArchiveListingData,
-  ArchiveListingError,
-  ArchiveListingResponse,
-  CreateBookingData,
-  CreateBookingError,
-  CreateBookingResponse,
-  CreateCastingCallData,
-  CreateCastingCallError,
-  CreateCastingCallResponse,
-  CreateListingData,
-  CreateListingError,
-  CreateListingResponse,
-  CreatePlanData,
-  CreatePlanError,
-  CreatePlanResponse,
-  ExpressInterestData,
-  ExpressInterestError,
-  ExpressInterestResponse,
-  GetBookingData,
-  GetBookingError,
-  GetBookingResponse,
-  GetCastingCallData,
-  GetCastingCallError,
-  GetCastingCallResponse,
-  GetCurrentUserData,
-  GetCurrentUserError,
-  GetCurrentUserResponse,
-  GetListingAvailabilityData,
-  GetListingAvailabilityResponse,
-  GetListingData,
-  GetListingError,
-  GetListingResponse,
-  GetPlanData,
-  GetPlanError,
-  GetPlanResponse,
-  GetPublicProfileData,
-  GetPublicProfileError,
-  GetPublicProfileResponse,
-  GetTalentData,
-  GetTalentError,
-  GetTalentResponse,
-  ListAuthProvidersData,
-  ListAuthProvidersResponse,
-  ListBookingMessagesData,
-  ListBookingMessagesResponse,
-  ListBookingsData,
-  ListBookingsResponse,
-  ListCastingCallsData,
-  ListCastingCallsResponse,
-  ListCitiesData,
-  ListCitiesResponse,
-  ListListingsData,
-  ListListingsResponse,
-  ListMyListingsData,
-  ListMyListingsResponse,
-  ListPlansData,
-  ListPlansResponse,
-  ListScoutPinsData,
-  ListScoutPinsResponse,
-  ListTalentData,
-  ListTalentResponse,
-  LoginData,
-  LoginError,
-  LoginResponse,
-  LogoutData,
-  LogoutResponse,
-  RecordHandoffData,
-  RecordHandoffResponse,
-  RegisterData,
-  RegisterError,
-  RegisterResponse,
-  ReportIssueData,
-  RequestMagicLinkData,
-  SendBookingMessageData,
-  SendBookingMessageResponse,
-  TransitionBookingData,
-  TransitionBookingError,
-  TransitionBookingResponse,
-  UpdateListingData,
-  UpdateListingError,
-  UpdateListingResponse,
-  UpdateProfileData,
-  UpdateProfileError,
-  UpdateProfileResponse,
-  UpdateSocialsData,
-  UpdateSocialsResponse,
-  UpsertMyTalentProfileData,
-  UpsertMyTalentProfileError,
-  UpsertMyTalentProfileResponse,
-  VerifyMagicLinkData,
-  VerifyMagicLinkError,
-  VerifyMagicLinkResponse,
+  GetHealthData,
+  GetHealthResponse,
+  GetV1AdminOpsData,
+  GetV1AdminOpsError,
+  GetV1AdminOpsResponse,
+  GetV1AuthMeData,
+  GetV1AuthMeError,
+  GetV1AuthMeResponse,
+  GetV1AuthOauthByProviderCallbackData,
+  GetV1AuthOauthByProviderData,
+  GetV1AuthOauthByProviderError,
+  GetV1AuthOauthByProviderResponse,
+  GetV1AuthSessionData,
+  GetV1AuthSessionError,
+  GetV1AuthSessionResponse,
+  GetV1AuthSsoData,
+  GetV1AuthSsoResponse,
+  GetV1BookingsByIdData,
+  GetV1BookingsByIdError,
+  GetV1BookingsByIdResponse,
+  GetV1BookingsData,
+  GetV1BookingsError,
+  GetV1BookingsResponse,
+  GetV1CastCallsData,
+  GetV1CastCallsResponse,
+  GetV1CastData,
+  GetV1CastResponse,
+  GetV1CastTalentByIdData,
+  GetV1CastTalentByIdError,
+  GetV1CastTalentByIdResponse,
+  GetV1CatalogHomeData,
+  GetV1CatalogHomeResponse,
+  GetV1CatalogPlacesData,
+  GetV1CatalogPlacesResponse,
+  GetV1GearData,
+  GetV1GearResponse,
+  GetV1GearSaleData,
+  GetV1GearSaleResponse,
+  GetV1ListingsByIdData,
+  GetV1ListingsByIdError,
+  GetV1ListingsByIdResponse,
+  GetV1LocationsData,
+  GetV1LocationsResponse,
+  GetV1PlannerConversationsByIdData,
+  GetV1PlannerConversationsByIdError,
+  GetV1PlannerConversationsByIdResponse,
+  GetV1UsersByIdData,
+  GetV1UsersByIdError,
+  GetV1UsersByIdFeedData,
+  GetV1UsersByIdFeedError,
+  GetV1UsersByIdFeedResponse,
+  GetV1UsersByIdResponse,
+  GetV1UsersMeData,
+  GetV1UsersMeError,
+  GetV1UsersMeResponse,
+  PatchV1UsersMeData,
+  PatchV1UsersMeError,
+  PatchV1UsersMeResponse,
+  PostV1AdminListingsByIdReviewData,
+  PostV1AdminListingsByIdReviewError,
+  PostV1AdminListingsByIdReviewResponse,
+  PostV1AdminPinsData,
+  PostV1AdminPinsError,
+  PostV1AdminPinsResponse,
+  PostV1AuthEmailConsumeData,
+  PostV1AuthEmailConsumeError,
+  PostV1AuthEmailConsumeResponse,
+  PostV1AuthEmailData,
+  PostV1AuthEmailError,
+  PostV1AuthEmailResponse,
+  PostV1AuthLoginData,
+  PostV1AuthLoginError,
+  PostV1AuthLoginResponse,
+  PostV1AuthLogoutData,
+  PostV1AuthLogoutResponse,
+  PostV1AuthRegisterData,
+  PostV1AuthRegisterError,
+  PostV1AuthRegisterResponse,
+  PostV1BookingsByIdAcceptData,
+  PostV1BookingsByIdAcceptError,
+  PostV1BookingsByIdAcceptResponse,
+  PostV1BookingsByIdDeclineData,
+  PostV1BookingsByIdDeclineError,
+  PostV1BookingsByIdDeclineResponse,
+  PostV1BookingsByIdHandoffData,
+  PostV1BookingsByIdHandoffError,
+  PostV1BookingsByIdHandoffResponse,
+  PostV1BookingsByIdMarkPaidData,
+  PostV1BookingsByIdMarkPaidError,
+  PostV1BookingsByIdMarkPaidResponse,
+  PostV1BookingsByIdMessagesData,
+  PostV1BookingsByIdMessagesError,
+  PostV1BookingsByIdMessagesResponse,
+  PostV1BookingsData,
+  PostV1BookingsError,
+  PostV1BookingsResponse,
+  PostV1CastCallsByIdApplyData,
+  PostV1CastCallsByIdApplyError,
+  PostV1CastCallsByIdApplyResponse,
+  PostV1CastCallsData,
+  PostV1CastCallsError,
+  PostV1CastCallsResponse,
+  PostV1CastTalentData,
+  PostV1CastTalentError,
+  PostV1CastTalentResponse,
+  PostV1GearData,
+  PostV1GearError,
+  PostV1GearResponse,
+  PostV1GearSaleData,
+  PostV1GearSaleError,
+  PostV1GearSaleResponse,
+  PostV1IssuesData,
+  PostV1IssuesError,
+  PostV1IssuesResponse,
+  PostV1LocationsData,
+  PostV1LocationsError,
+  PostV1LocationsResponse,
+  PostV1PlannerData,
+  PostV1PlannerError,
+  PostV1PlannerResponse,
+  PostV1UsersMeRolesData,
+  PostV1UsersMeRolesError,
+  PostV1UsersMeRolesResponse,
+  PutV1UsersMeSocialData,
+  PutV1UsersMeSocialError,
+  PutV1UsersMeSocialResponse,
 } from "../types.gen";
-
-/**
- * Sign in with email and password
- */
-export const loginMutation = (
-  options?: Partial<Options<LoginData>>,
-): UseMutationOptions<LoginResponse, LoginError, Options<LoginData>> => {
-  const mutationOptions: UseMutationOptions<
-    LoginResponse,
-    LoginError,
-    Options<LoginData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await login({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
-/**
- * Create an account (admins and ops are not created this way)
- */
-export const registerMutation = (
-  options?: Partial<Options<RegisterData>>,
-): UseMutationOptions<
-  RegisterResponse,
-  RegisterError,
-  Options<RegisterData>
-> => {
-  const mutationOptions: UseMutationOptions<
-    RegisterResponse,
-    RegisterError,
-    Options<RegisterData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await register({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
-/**
- * Email a one-time sign-in link
- */
-export const requestMagicLinkMutation = (
-  options?: Partial<Options<RequestMagicLinkData>>,
-): UseMutationOptions<unknown, DefaultError, Options<RequestMagicLinkData>> => {
-  const mutationOptions: UseMutationOptions<
-    unknown,
-    DefaultError,
-    Options<RequestMagicLinkData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await requestMagicLink({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
-export const verifyMagicLinkMutation = (
-  options?: Partial<Options<VerifyMagicLinkData>>,
-): UseMutationOptions<
-  VerifyMagicLinkResponse,
-  VerifyMagicLinkError,
-  Options<VerifyMagicLinkData>
-> => {
-  const mutationOptions: UseMutationOptions<
-    VerifyMagicLinkResponse,
-    VerifyMagicLinkError,
-    Options<VerifyMagicLinkData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await verifyMagicLink({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
 
 export type QueryKey<TOptions extends Options> = [
   Pick<TOptions, "baseUrl" | "body" | "headers" | "path" | "query"> & {
@@ -284,24 +225,21 @@ const createQueryKey = <TOptions extends Options>(
   return [params];
 };
 
-export const listAuthProvidersQueryKey = (
-  options?: Options<ListAuthProvidersData>,
-) => createQueryKey("listAuthProviders", options);
+export const getHealthQueryKey = (options?: Options<GetHealthData>) =>
+  createQueryKey("getHealth", options);
 
 /**
- * Social sign-in providers configured on the API
+ * Health check
  */
-export const listAuthProvidersOptions = (
-  options?: Options<ListAuthProvidersData>,
-) =>
+export const getHealthOptions = (options?: Options<GetHealthData>) =>
   queryOptions<
-    ListAuthProvidersResponse,
+    GetHealthResponse,
     DefaultError,
-    ListAuthProvidersResponse,
-    ReturnType<typeof listAuthProvidersQueryKey>
+    GetHealthResponse,
+    ReturnType<typeof getHealthQueryKey>
   >({
     queryFn: async ({ queryKey, signal }) => {
-      const { data } = await listAuthProviders({
+      const { data } = await getHealth({
         ...options,
         ...queryKey[0],
         signal,
@@ -309,65 +247,26 @@ export const listAuthProvidersOptions = (
       });
       return data;
     },
-    queryKey: listAuthProvidersQueryKey(options),
+    queryKey: getHealthQueryKey(options),
   });
 
-export const logoutMutation = (
-  options?: Partial<Options<LogoutData>>,
-): UseMutationOptions<LogoutResponse, DefaultError, Options<LogoutData>> => {
-  const mutationOptions: UseMutationOptions<
-    LogoutResponse,
-    DefaultError,
-    Options<LogoutData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await logout({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
-export const getCurrentUserQueryKey = (options?: Options<GetCurrentUserData>) =>
-  createQueryKey("getCurrentUser", options);
-
-export const getCurrentUserOptions = (options?: Options<GetCurrentUserData>) =>
-  queryOptions<
-    GetCurrentUserResponse,
-    GetCurrentUserError,
-    GetCurrentUserResponse,
-    ReturnType<typeof getCurrentUserQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await getCurrentUser({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: getCurrentUserQueryKey(options),
-  });
-
-export const updateProfileMutation = (
-  options?: Partial<Options<UpdateProfileData>>,
+/**
+ * Register and set session cookie
+ */
+export const postV1AuthRegisterMutation = (
+  options?: Partial<Options<PostV1AuthRegisterData>>,
 ): UseMutationOptions<
-  UpdateProfileResponse,
-  UpdateProfileError,
-  Options<UpdateProfileData>
+  PostV1AuthRegisterResponse,
+  PostV1AuthRegisterError,
+  Options<PostV1AuthRegisterData>
 > => {
   const mutationOptions: UseMutationOptions<
-    UpdateProfileResponse,
-    UpdateProfileError,
-    Options<UpdateProfileData>
+    PostV1AuthRegisterResponse,
+    PostV1AuthRegisterError,
+    Options<PostV1AuthRegisterData>
   > = {
     mutationFn: async (fnOptions) => {
-      const { data } = await updateProfile({
+      const { data } = await postV1AuthRegister({
         ...options,
         ...fnOptions,
         throwOnError: true,
@@ -379,18 +278,22 @@ export const updateProfileMutation = (
 };
 
 /**
- * Add a role without registering again
+ * Login and set session cookie
  */
-export const addRoleMutation = (
-  options?: Partial<Options<AddRoleData>>,
-): UseMutationOptions<AddRoleResponse, DefaultError, Options<AddRoleData>> => {
+export const postV1AuthLoginMutation = (
+  options?: Partial<Options<PostV1AuthLoginData>>,
+): UseMutationOptions<
+  PostV1AuthLoginResponse,
+  PostV1AuthLoginError,
+  Options<PostV1AuthLoginData>
+> => {
   const mutationOptions: UseMutationOptions<
-    AddRoleResponse,
-    DefaultError,
-    Options<AddRoleData>
+    PostV1AuthLoginResponse,
+    PostV1AuthLoginError,
+    Options<PostV1AuthLoginData>
   > = {
     mutationFn: async (fnOptions) => {
-      const { data } = await addRole({
+      const { data } = await postV1AuthLogin({
         ...options,
         ...fnOptions,
         throwOnError: true,
@@ -401,20 +304,23 @@ export const addRoleMutation = (
   return mutationOptions;
 };
 
-export const updateSocialsMutation = (
-  options?: Partial<Options<UpdateSocialsData>>,
+/**
+ * Clear session cookie
+ */
+export const postV1AuthLogoutMutation = (
+  options?: Partial<Options<PostV1AuthLogoutData>>,
 ): UseMutationOptions<
-  UpdateSocialsResponse,
+  PostV1AuthLogoutResponse,
   DefaultError,
-  Options<UpdateSocialsData>
+  Options<PostV1AuthLogoutData>
 > => {
   const mutationOptions: UseMutationOptions<
-    UpdateSocialsResponse,
+    PostV1AuthLogoutResponse,
     DefaultError,
-    Options<UpdateSocialsData>
+    Options<PostV1AuthLogoutData>
   > = {
     mutationFn: async (fnOptions) => {
-      const { data } = await updateSocials({
+      const { data } = await postV1AuthLogout({
         ...options,
         ...fnOptions,
         throwOnError: true,
@@ -425,21 +331,21 @@ export const updateSocialsMutation = (
   return mutationOptions;
 };
 
-export const listMyListingsQueryKey = (options?: Options<ListMyListingsData>) =>
-  createQueryKey("listMyListings", options);
+export const getV1AuthMeQueryKey = (options?: Options<GetV1AuthMeData>) =>
+  createQueryKey("getV1AuthMe", options);
 
 /**
- * Listings I own, including pending ones
+ * Current user (optional auth)
  */
-export const listMyListingsOptions = (options?: Options<ListMyListingsData>) =>
+export const getV1AuthMeOptions = (options?: Options<GetV1AuthMeData>) =>
   queryOptions<
-    ListMyListingsResponse,
-    DefaultError,
-    ListMyListingsResponse,
-    ReturnType<typeof listMyListingsQueryKey>
+    GetV1AuthMeResponse,
+    GetV1AuthMeError,
+    GetV1AuthMeResponse,
+    ReturnType<typeof getV1AuthMeQueryKey>
   >({
     queryFn: async ({ queryKey, signal }) => {
-      const { data } = await listMyListings({
+      const { data } = await getV1AuthMe({
         ...options,
         ...queryKey[0],
         signal,
@@ -447,110 +353,106 @@ export const listMyListingsOptions = (options?: Options<ListMyListingsData>) =>
       });
       return data;
     },
-    queryKey: listMyListingsQueryKey(options),
+    queryKey: getV1AuthMeQueryKey(options),
   });
 
-const createInfiniteParams = <
-  K extends Pick<QueryKey<Options>[0], "body" | "headers" | "path" | "query">,
->(
-  queryKey: QueryKey<Options>,
-  page: K,
-) => {
-  const params = { ...queryKey[0] };
-  if (page.body) {
-    params.body = {
-      ...(queryKey[0].body as any),
-      ...(page.body as any),
-    };
-  }
-  if (page.headers) {
-    params.headers = {
-      ...queryKey[0].headers,
-      ...page.headers,
-    };
-  }
-  if (page.path) {
-    params.path = {
-      ...(queryKey[0].path as any),
-      ...(page.path as any),
-    };
-  }
-  if (page.query) {
-    params.query = {
-      ...(queryKey[0].query as any),
-      ...(page.query as any),
-    };
-  }
-  return params as unknown as typeof page;
-};
-
-export const listMyListingsInfiniteQueryKey = (
-  options?: Options<ListMyListingsData>,
-): QueryKey<Options<ListMyListingsData>> =>
-  createQueryKey("listMyListings", options, true);
+export const getV1AuthSsoQueryKey = (options?: Options<GetV1AuthSsoData>) =>
+  createQueryKey("getV1AuthSso", options);
 
 /**
- * Listings I own, including pending ones
+ * Which email/social SSO methods are configured
  */
-export const listMyListingsInfiniteOptions = (
-  options?: Options<ListMyListingsData>,
-) => {
-  const opts = infiniteQueryOptions<
-    ListMyListingsResponse,
+export const getV1AuthSsoOptions = (options?: Options<GetV1AuthSsoData>) =>
+  queryOptions<
+    GetV1AuthSsoResponse,
     DefaultError,
-    InfiniteData<ListMyListingsResponse>,
-    QueryKey<Options<ListMyListingsData>>,
-    | number
-    | Pick<
-        QueryKey<Options<ListMyListingsData>>[0],
-        "body" | "headers" | "path" | "query"
-      >
-  >(
-    // @ts-ignore
-    {
-      queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<
-          QueryKey<Options<ListMyListingsData>>[0],
-          "body" | "headers" | "path" | "query"
-        > =
-          typeof pageParam === "object"
-            ? pageParam
-            : {
-                query: {
-                  page: pageParam,
-                },
-              };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listMyListings({
-          ...options,
-          ...params,
-          signal,
-          throwOnError: true,
-        });
-        return data;
-      },
-      queryKey: listMyListingsInfiniteQueryKey(options),
+    GetV1AuthSsoResponse,
+    ReturnType<typeof getV1AuthSsoQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await getV1AuthSso({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
     },
-  );
-  return opts as Omit<typeof opts, "initialData">;
+    queryKey: getV1AuthSsoQueryKey(options),
+  });
+
+/**
+ * Send an email magic-link (non-admins)
+ */
+export const postV1AuthEmailMutation = (
+  options?: Partial<Options<PostV1AuthEmailData>>,
+): UseMutationOptions<
+  PostV1AuthEmailResponse,
+  PostV1AuthEmailError,
+  Options<PostV1AuthEmailData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    PostV1AuthEmailResponse,
+    PostV1AuthEmailError,
+    Options<PostV1AuthEmailData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await postV1AuthEmail({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
 };
 
-export const getPublicProfileQueryKey = (
-  options: Options<GetPublicProfileData>,
-) => createQueryKey("getPublicProfile", options);
+/**
+ * Consume an email magic-link
+ */
+export const postV1AuthEmailConsumeMutation = (
+  options?: Partial<Options<PostV1AuthEmailConsumeData>>,
+): UseMutationOptions<
+  PostV1AuthEmailConsumeResponse,
+  PostV1AuthEmailConsumeError,
+  Options<PostV1AuthEmailConsumeData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    PostV1AuthEmailConsumeResponse,
+    PostV1AuthEmailConsumeError,
+    Options<PostV1AuthEmailConsumeData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await postV1AuthEmailConsume({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
 
-export const getPublicProfileOptions = (
-  options: Options<GetPublicProfileData>,
+export const getV1AuthOauthByProviderQueryKey = (
+  options: Options<GetV1AuthOauthByProviderData>,
+) => createQueryKey("getV1AuthOauthByProvider", options);
+
+/**
+ * Start Google, Facebook, Instagram, or X sign-in
+ */
+export const getV1AuthOauthByProviderOptions = (
+  options: Options<GetV1AuthOauthByProviderData>,
 ) =>
   queryOptions<
-    GetPublicProfileResponse,
-    GetPublicProfileError,
-    GetPublicProfileResponse,
-    ReturnType<typeof getPublicProfileQueryKey>
+    GetV1AuthOauthByProviderResponse,
+    GetV1AuthOauthByProviderError,
+    GetV1AuthOauthByProviderResponse,
+    ReturnType<typeof getV1AuthOauthByProviderQueryKey>
   >({
     queryFn: async ({ queryKey, signal }) => {
-      const { data } = await getPublicProfile({
+      const { data } = await getV1AuthOauthByProvider({
         ...options,
         ...queryKey[0],
         signal,
@@ -558,845 +460,1017 @@ export const getPublicProfileOptions = (
       });
       return data;
     },
-    queryKey: getPublicProfileQueryKey(options),
+    queryKey: getV1AuthOauthByProviderQueryKey(options),
   });
 
-export const listCitiesQueryKey = (options?: Options<ListCitiesData>) =>
-  createQueryKey("listCities", options);
+export const getV1AuthOauthByProviderCallbackQueryKey = (
+  options: Options<GetV1AuthOauthByProviderCallbackData>,
+) => createQueryKey("getV1AuthOauthByProviderCallback", options);
 
 /**
- * Cities the catalog covers, with coordinates
+ * OAuth callback; sets cookie and redirects
  */
-export const listCitiesOptions = (options?: Options<ListCitiesData>) =>
-  queryOptions<
-    ListCitiesResponse,
-    DefaultError,
-    ListCitiesResponse,
-    ReturnType<typeof listCitiesQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await listCities({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: listCitiesQueryKey(options),
-  });
-
-export const listListingsQueryKey = (options?: Options<ListListingsData>) =>
-  createQueryKey("listListings", options);
-
-/**
- * Search published locations and gear
- *
- * When `lat`/`lng` are set, results include `distanceKm` and sort closest first.
- *
- */
-export const listListingsOptions = (options?: Options<ListListingsData>) =>
-  queryOptions<
-    ListListingsResponse,
-    DefaultError,
-    ListListingsResponse,
-    ReturnType<typeof listListingsQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await listListings({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: listListingsQueryKey(options),
-  });
-
-export const listListingsInfiniteQueryKey = (
-  options?: Options<ListListingsData>,
-): QueryKey<Options<ListListingsData>> =>
-  createQueryKey("listListings", options, true);
-
-/**
- * Search published locations and gear
- *
- * When `lat`/`lng` are set, results include `distanceKm` and sort closest first.
- *
- */
-export const listListingsInfiniteOptions = (
-  options?: Options<ListListingsData>,
-) => {
-  const opts = infiniteQueryOptions<
-    ListListingsResponse,
-    DefaultError,
-    InfiniteData<ListListingsResponse>,
-    QueryKey<Options<ListListingsData>>,
-    | number
-    | Pick<
-        QueryKey<Options<ListListingsData>>[0],
-        "body" | "headers" | "path" | "query"
-      >
-  >(
-    // @ts-ignore
-    {
-      queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<
-          QueryKey<Options<ListListingsData>>[0],
-          "body" | "headers" | "path" | "query"
-        > =
-          typeof pageParam === "object"
-            ? pageParam
-            : {
-                query: {
-                  page: pageParam,
-                },
-              };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listListings({
-          ...options,
-          ...params,
-          signal,
-          throwOnError: true,
-        });
-        return data;
-      },
-      queryKey: listListingsInfiniteQueryKey(options),
-    },
-  );
-  return opts as Omit<typeof opts, "initialData">;
-};
-
-/**
- * Create a listing (owner role); waits for admin publish unless ops
- */
-export const createListingMutation = (
-  options?: Partial<Options<CreateListingData>>,
-): UseMutationOptions<
-  CreateListingResponse,
-  CreateListingError,
-  Options<CreateListingData>
-> => {
-  const mutationOptions: UseMutationOptions<
-    CreateListingResponse,
-    CreateListingError,
-    Options<CreateListingData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await createListing({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
-export const archiveListingMutation = (
-  options?: Partial<Options<ArchiveListingData>>,
-): UseMutationOptions<
-  ArchiveListingResponse,
-  ArchiveListingError,
-  Options<ArchiveListingData>
-> => {
-  const mutationOptions: UseMutationOptions<
-    ArchiveListingResponse,
-    ArchiveListingError,
-    Options<ArchiveListingData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await archiveListing({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
-export const getListingQueryKey = (options: Options<GetListingData>) =>
-  createQueryKey("getListing", options);
-
-export const getListingOptions = (options: Options<GetListingData>) =>
-  queryOptions<
-    GetListingResponse,
-    GetListingError,
-    GetListingResponse,
-    ReturnType<typeof getListingQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await getListing({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: getListingQueryKey(options),
-  });
-
-export const updateListingMutation = (
-  options?: Partial<Options<UpdateListingData>>,
-): UseMutationOptions<
-  UpdateListingResponse,
-  UpdateListingError,
-  Options<UpdateListingData>
-> => {
-  const mutationOptions: UseMutationOptions<
-    UpdateListingResponse,
-    UpdateListingError,
-    Options<UpdateListingData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await updateListing({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
-export const getListingAvailabilityQueryKey = (
-  options: Options<GetListingAvailabilityData>,
-) => createQueryKey("getListingAvailability", options);
-
-export const getListingAvailabilityOptions = (
-  options: Options<GetListingAvailabilityData>,
+export const getV1AuthOauthByProviderCallbackOptions = (
+  options: Options<GetV1AuthOauthByProviderCallbackData>,
 ) =>
   queryOptions<
-    GetListingAvailabilityResponse,
-    DefaultError,
-    GetListingAvailabilityResponse,
-    ReturnType<typeof getListingAvailabilityQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await getListingAvailability({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: getListingAvailabilityQueryKey(options),
-  });
-
-export const listScoutPinsQueryKey = (options?: Options<ListScoutPinsData>) =>
-  createQueryKey("listScoutPins", options);
-
-/**
- * Discovery-only spots (parks, beaches, landmarks); not bookable
- */
-export const listScoutPinsOptions = (options?: Options<ListScoutPinsData>) =>
-  queryOptions<
-    ListScoutPinsResponse,
-    DefaultError,
-    ListScoutPinsResponse,
-    ReturnType<typeof listScoutPinsQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await listScoutPins({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: listScoutPinsQueryKey(options),
-  });
-
-export const listTalentQueryKey = (options?: Options<ListTalentData>) =>
-  createQueryKey("listTalent", options);
-
-export const listTalentOptions = (options?: Options<ListTalentData>) =>
-  queryOptions<
-    ListTalentResponse,
-    DefaultError,
-    ListTalentResponse,
-    ReturnType<typeof listTalentQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await listTalent({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: listTalentQueryKey(options),
-  });
-
-export const listTalentInfiniteQueryKey = (
-  options?: Options<ListTalentData>,
-): QueryKey<Options<ListTalentData>> =>
-  createQueryKey("listTalent", options, true);
-
-export const listTalentInfiniteOptions = (
-  options?: Options<ListTalentData>,
-) => {
-  const opts = infiniteQueryOptions<
-    ListTalentResponse,
-    DefaultError,
-    InfiniteData<ListTalentResponse>,
-    QueryKey<Options<ListTalentData>>,
-    | number
-    | Pick<
-        QueryKey<Options<ListTalentData>>[0],
-        "body" | "headers" | "path" | "query"
-      >
-  >(
-    // @ts-ignore
-    {
-      queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<
-          QueryKey<Options<ListTalentData>>[0],
-          "body" | "headers" | "path" | "query"
-        > =
-          typeof pageParam === "object"
-            ? pageParam
-            : {
-                query: {
-                  page: pageParam,
-                },
-              };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listTalent({
-          ...options,
-          ...params,
-          signal,
-          throwOnError: true,
-        });
-        return data;
-      },
-      queryKey: listTalentInfiniteQueryKey(options),
-    },
-  );
-  return opts as Omit<typeof opts, "initialData">;
-};
-
-export const getTalentQueryKey = (options: Options<GetTalentData>) =>
-  createQueryKey("getTalent", options);
-
-export const getTalentOptions = (options: Options<GetTalentData>) =>
-  queryOptions<
-    GetTalentResponse,
-    GetTalentError,
-    GetTalentResponse,
-    ReturnType<typeof getTalentQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await getTalent({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: getTalentQueryKey(options),
-  });
-
-/**
- * Create or update my published creator listing (creator role)
- */
-export const upsertMyTalentProfileMutation = (
-  options?: Partial<Options<UpsertMyTalentProfileData>>,
-): UseMutationOptions<
-  UpsertMyTalentProfileResponse,
-  UpsertMyTalentProfileError,
-  Options<UpsertMyTalentProfileData>
-> => {
-  const mutationOptions: UseMutationOptions<
-    UpsertMyTalentProfileResponse,
-    UpsertMyTalentProfileError,
-    Options<UpsertMyTalentProfileData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await upsertMyTalentProfile({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
-export const listCastingCallsQueryKey = (
-  options?: Options<ListCastingCallsData>,
-) => createQueryKey("listCastingCalls", options);
-
-export const listCastingCallsOptions = (
-  options?: Options<ListCastingCallsData>,
-) =>
-  queryOptions<
-    ListCastingCallsResponse,
-    DefaultError,
-    ListCastingCallsResponse,
-    ReturnType<typeof listCastingCallsQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await listCastingCalls({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: listCastingCallsQueryKey(options),
-  });
-
-export const listCastingCallsInfiniteQueryKey = (
-  options?: Options<ListCastingCallsData>,
-): QueryKey<Options<ListCastingCallsData>> =>
-  createQueryKey("listCastingCalls", options, true);
-
-export const listCastingCallsInfiniteOptions = (
-  options?: Options<ListCastingCallsData>,
-) => {
-  const opts = infiniteQueryOptions<
-    ListCastingCallsResponse,
-    DefaultError,
-    InfiniteData<ListCastingCallsResponse>,
-    QueryKey<Options<ListCastingCallsData>>,
-    | number
-    | Pick<
-        QueryKey<Options<ListCastingCallsData>>[0],
-        "body" | "headers" | "path" | "query"
-      >
-  >(
-    // @ts-ignore
-    {
-      queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<
-          QueryKey<Options<ListCastingCallsData>>[0],
-          "body" | "headers" | "path" | "query"
-        > =
-          typeof pageParam === "object"
-            ? pageParam
-            : {
-                query: {
-                  page: pageParam,
-                },
-              };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listCastingCalls({
-          ...options,
-          ...params,
-          signal,
-          throwOnError: true,
-        });
-        return data;
-      },
-      queryKey: listCastingCallsInfiniteQueryKey(options),
-    },
-  );
-  return opts as Omit<typeof opts, "initialData">;
-};
-
-export const createCastingCallMutation = (
-  options?: Partial<Options<CreateCastingCallData>>,
-): UseMutationOptions<
-  CreateCastingCallResponse,
-  CreateCastingCallError,
-  Options<CreateCastingCallData>
-> => {
-  const mutationOptions: UseMutationOptions<
-    CreateCastingCallResponse,
-    CreateCastingCallError,
-    Options<CreateCastingCallData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await createCastingCall({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
-export const getCastingCallQueryKey = (options: Options<GetCastingCallData>) =>
-  createQueryKey("getCastingCall", options);
-
-export const getCastingCallOptions = (options: Options<GetCastingCallData>) =>
-  queryOptions<
-    GetCastingCallResponse,
-    GetCastingCallError,
-    GetCastingCallResponse,
-    ReturnType<typeof getCastingCallQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await getCastingCall({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: getCastingCallQueryKey(options),
-  });
-
-export const expressInterestMutation = (
-  options?: Partial<Options<ExpressInterestData>>,
-): UseMutationOptions<
-  ExpressInterestResponse,
-  ExpressInterestError,
-  Options<ExpressInterestData>
-> => {
-  const mutationOptions: UseMutationOptions<
-    ExpressInterestResponse,
-    ExpressInterestError,
-    Options<ExpressInterestData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await expressInterest({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
-export const listBookingsQueryKey = (options?: Options<ListBookingsData>) =>
-  createQueryKey("listBookings", options);
-
-/**
- * Bookings I requested (as renter) or received (as owner or creator)
- */
-export const listBookingsOptions = (options?: Options<ListBookingsData>) =>
-  queryOptions<
-    ListBookingsResponse,
-    DefaultError,
-    ListBookingsResponse,
-    ReturnType<typeof listBookingsQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await listBookings({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: listBookingsQueryKey(options),
-  });
-
-export const listBookingsInfiniteQueryKey = (
-  options?: Options<ListBookingsData>,
-): QueryKey<Options<ListBookingsData>> =>
-  createQueryKey("listBookings", options, true);
-
-/**
- * Bookings I requested (as renter) or received (as owner or creator)
- */
-export const listBookingsInfiniteOptions = (
-  options?: Options<ListBookingsData>,
-) => {
-  const opts = infiniteQueryOptions<
-    ListBookingsResponse,
-    DefaultError,
-    InfiniteData<ListBookingsResponse>,
-    QueryKey<Options<ListBookingsData>>,
-    | number
-    | Pick<
-        QueryKey<Options<ListBookingsData>>[0],
-        "body" | "headers" | "path" | "query"
-      >
-  >(
-    // @ts-ignore
-    {
-      queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<
-          QueryKey<Options<ListBookingsData>>[0],
-          "body" | "headers" | "path" | "query"
-        > =
-          typeof pageParam === "object"
-            ? pageParam
-            : {
-                query: {
-                  page: pageParam,
-                },
-              };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listBookings({
-          ...options,
-          ...params,
-          signal,
-          throwOnError: true,
-        });
-        return data;
-      },
-      queryKey: listBookingsInfiniteQueryKey(options),
-    },
-  );
-  return opts as Omit<typeof opts, "initialData">;
-};
-
-/**
- * Request a booking (location), rental (gear) or hire (talent)
- */
-export const createBookingMutation = (
-  options?: Partial<Options<CreateBookingData>>,
-): UseMutationOptions<
-  CreateBookingResponse,
-  CreateBookingError,
-  Options<CreateBookingData>
-> => {
-  const mutationOptions: UseMutationOptions<
-    CreateBookingResponse,
-    CreateBookingError,
-    Options<CreateBookingData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await createBooking({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
-export const getBookingQueryKey = (options: Options<GetBookingData>) =>
-  createQueryKey("getBooking", options);
-
-export const getBookingOptions = (options: Options<GetBookingData>) =>
-  queryOptions<
-    GetBookingResponse,
-    GetBookingError,
-    GetBookingResponse,
-    ReturnType<typeof getBookingQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await getBooking({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: getBookingQueryKey(options),
-  });
-
-/**
- * Move a booking through its lifecycle
- *
- * Provider: accept, decline, confirm_payment, complete.
- * Requester: cancel (before completion).
- *
- */
-export const transitionBookingMutation = (
-  options?: Partial<Options<TransitionBookingData>>,
-): UseMutationOptions<
-  TransitionBookingResponse,
-  TransitionBookingError,
-  Options<TransitionBookingData>
-> => {
-  const mutationOptions: UseMutationOptions<
-    TransitionBookingResponse,
-    TransitionBookingError,
-    Options<TransitionBookingData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await transitionBooking({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
-export const listBookingMessagesQueryKey = (
-  options: Options<ListBookingMessagesData>,
-) => createQueryKey("listBookingMessages", options);
-
-export const listBookingMessagesOptions = (
-  options: Options<ListBookingMessagesData>,
-) =>
-  queryOptions<
-    ListBookingMessagesResponse,
-    DefaultError,
-    ListBookingMessagesResponse,
-    ReturnType<typeof listBookingMessagesQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await listBookingMessages({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: listBookingMessagesQueryKey(options),
-  });
-
-export const sendBookingMessageMutation = (
-  options?: Partial<Options<SendBookingMessageData>>,
-): UseMutationOptions<
-  SendBookingMessageResponse,
-  DefaultError,
-  Options<SendBookingMessageData>
-> => {
-  const mutationOptions: UseMutationOptions<
-    SendBookingMessageResponse,
-    DefaultError,
-    Options<SendBookingMessageData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await sendBookingMessage({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
-/**
- * Record gear pickup or return (gear rentals only)
- */
-export const recordHandoffMutation = (
-  options?: Partial<Options<RecordHandoffData>>,
-): UseMutationOptions<
-  RecordHandoffResponse,
-  DefaultError,
-  Options<RecordHandoffData>
-> => {
-  const mutationOptions: UseMutationOptions<
-    RecordHandoffResponse,
-    DefaultError,
-    Options<RecordHandoffData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await recordHandoff({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
-export const listPlansQueryKey = (options?: Options<ListPlansData>) =>
-  createQueryKey("listPlans", options);
-
-export const listPlansOptions = (options?: Options<ListPlansData>) =>
-  queryOptions<
-    ListPlansResponse,
-    DefaultError,
-    ListPlansResponse,
-    ReturnType<typeof listPlansQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await listPlans({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: listPlansQueryKey(options),
-  });
-
-/**
- * Turn a creative brief into a production plan
- */
-export const createPlanMutation = (
-  options?: Partial<Options<CreatePlanData>>,
-): UseMutationOptions<
-  CreatePlanResponse,
-  CreatePlanError,
-  Options<CreatePlanData>
-> => {
-  const mutationOptions: UseMutationOptions<
-    CreatePlanResponse,
-    CreatePlanError,
-    Options<CreatePlanData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await createPlan({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
-export const getPlanQueryKey = (options: Options<GetPlanData>) =>
-  createQueryKey("getPlan", options);
-
-export const getPlanOptions = (options: Options<GetPlanData>) =>
-  queryOptions<
-    GetPlanResponse,
-    GetPlanError,
-    GetPlanResponse,
-    ReturnType<typeof getPlanQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await getPlan({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: getPlanQueryKey(options),
-  });
-
-/**
- * Footer "Report an issue"
- */
-export const reportIssueMutation = (
-  options?: Partial<Options<ReportIssueData>>,
-): UseMutationOptions<unknown, DefaultError, Options<ReportIssueData>> => {
-  const mutationOptions: UseMutationOptions<
     unknown,
     DefaultError,
-    Options<ReportIssueData>
+    unknown,
+    ReturnType<typeof getV1AuthOauthByProviderCallbackQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await getV1AuthOauthByProviderCallback({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: getV1AuthOauthByProviderCallbackQueryKey(options),
+  });
+
+export const getV1AuthSessionQueryKey = (
+  options?: Options<GetV1AuthSessionData>,
+) => createQueryKey("getV1AuthSession", options);
+
+/**
+ * Current user (requires auth)
+ */
+export const getV1AuthSessionOptions = (
+  options?: Options<GetV1AuthSessionData>,
+) =>
+  queryOptions<
+    GetV1AuthSessionResponse,
+    GetV1AuthSessionError,
+    GetV1AuthSessionResponse,
+    ReturnType<typeof getV1AuthSessionQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await getV1AuthSession({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: getV1AuthSessionQueryKey(options),
+  });
+
+export const getV1UsersMeQueryKey = (options?: Options<GetV1UsersMeData>) =>
+  createQueryKey("getV1UsersMe", options);
+
+/**
+ * Account plus profile
+ *
+ * Session fields plus bio, neighborhood, and specialties. Used by `/account`.
+ */
+export const getV1UsersMeOptions = (options?: Options<GetV1UsersMeData>) =>
+  queryOptions<
+    GetV1UsersMeResponse,
+    GetV1UsersMeError,
+    GetV1UsersMeResponse,
+    ReturnType<typeof getV1UsersMeQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await getV1UsersMe({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: getV1UsersMeQueryKey(options),
+  });
+
+/**
+ * Update name, phone, or profile
+ *
+ * Re-issues `ams_session` so the cookie name and phone stay current.
+ */
+export const patchV1UsersMeMutation = (
+  options?: Partial<Options<PatchV1UsersMeData>>,
+): UseMutationOptions<
+  PatchV1UsersMeResponse,
+  PatchV1UsersMeError,
+  Options<PatchV1UsersMeData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    PatchV1UsersMeResponse,
+    PatchV1UsersMeError,
+    Options<PatchV1UsersMeData>
   > = {
     mutationFn: async (fnOptions) => {
-      const { data } = await reportIssue({
+      const { data } = await patchV1UsersMe({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Replace social accounts on the signed-in profile
+ */
+export const putV1UsersMeSocialMutation = (
+  options?: Partial<Options<PutV1UsersMeSocialData>>,
+): UseMutationOptions<
+  PutV1UsersMeSocialResponse,
+  PutV1UsersMeSocialError,
+  Options<PutV1UsersMeSocialData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    PutV1UsersMeSocialResponse,
+    PutV1UsersMeSocialError,
+    Options<PutV1UsersMeSocialData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await putV1UsersMeSocial({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const getV1UsersByIdQueryKey = (options: Options<GetV1UsersByIdData>) =>
+  createQueryKey("getV1UsersById", options);
+
+/**
+ * Public profile
+ */
+export const getV1UsersByIdOptions = (options: Options<GetV1UsersByIdData>) =>
+  queryOptions<
+    GetV1UsersByIdResponse,
+    GetV1UsersByIdError,
+    GetV1UsersByIdResponse,
+    ReturnType<typeof getV1UsersByIdQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await getV1UsersById({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: getV1UsersByIdQueryKey(options),
+  });
+
+export const getV1UsersByIdFeedQueryKey = (
+  options: Options<GetV1UsersByIdFeedData>,
+) => createQueryKey("getV1UsersByIdFeed", options);
+
+/**
+ * Latest public posts for the selected social platform
+ */
+export const getV1UsersByIdFeedOptions = (
+  options: Options<GetV1UsersByIdFeedData>,
+) =>
+  queryOptions<
+    GetV1UsersByIdFeedResponse,
+    GetV1UsersByIdFeedError,
+    GetV1UsersByIdFeedResponse,
+    ReturnType<typeof getV1UsersByIdFeedQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await getV1UsersByIdFeed({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: getV1UsersByIdFeedQueryKey(options),
+  });
+
+/**
+ * Add renter, owner, or talent
+ *
+ * Idempotent upsert. Cannot assign `admin`. Re-issues `ams_session` so Next middleware sees the new roles.
+ */
+export const postV1UsersMeRolesMutation = (
+  options?: Partial<Options<PostV1UsersMeRolesData>>,
+): UseMutationOptions<
+  PostV1UsersMeRolesResponse,
+  PostV1UsersMeRolesError,
+  Options<PostV1UsersMeRolesData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    PostV1UsersMeRolesResponse,
+    PostV1UsersMeRolesError,
+    Options<PostV1UsersMeRolesData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await postV1UsersMeRoles({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const getV1CatalogPlacesQueryKey = (
+  options?: Options<GetV1CatalogPlacesData>,
+) => createQueryKey("getV1CatalogPlaces", options);
+
+/**
+ * Live gazetteer (starting in Nigeria): states and metro fences
+ */
+export const getV1CatalogPlacesOptions = (
+  options?: Options<GetV1CatalogPlacesData>,
+) =>
+  queryOptions<
+    GetV1CatalogPlacesResponse,
+    DefaultError,
+    GetV1CatalogPlacesResponse,
+    ReturnType<typeof getV1CatalogPlacesQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await getV1CatalogPlaces({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: getV1CatalogPlacesQueryKey(options),
+  });
+
+export const getV1CatalogHomeQueryKey = (
+  options?: Options<GetV1CatalogHomeData>,
+) => createQueryKey("getV1CatalogHome", options);
+
+/**
+ * Home feed
+ *
+ * Optional state / metro spatial context.
+ */
+export const getV1CatalogHomeOptions = (
+  options?: Options<GetV1CatalogHomeData>,
+) =>
+  queryOptions<
+    GetV1CatalogHomeResponse,
+    DefaultError,
+    GetV1CatalogHomeResponse,
+    ReturnType<typeof getV1CatalogHomeQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await getV1CatalogHome({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: getV1CatalogHomeQueryKey(options),
+  });
+
+export const getV1LocationsQueryKey = (options?: Options<GetV1LocationsData>) =>
+  createQueryKey("getV1Locations", options);
+
+/**
+ * Search published locations and pins
+ */
+export const getV1LocationsOptions = (options?: Options<GetV1LocationsData>) =>
+  queryOptions<
+    GetV1LocationsResponse,
+    DefaultError,
+    GetV1LocationsResponse,
+    ReturnType<typeof getV1LocationsQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await getV1Locations({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: getV1LocationsQueryKey(options),
+  });
+
+/**
+ * Create a location listing
+ *
+ * Requires owner or admin. Status is `pending` unless the caller is admin.
+ */
+export const postV1LocationsMutation = (
+  options?: Partial<Options<PostV1LocationsData>>,
+): UseMutationOptions<
+  PostV1LocationsResponse,
+  PostV1LocationsError,
+  Options<PostV1LocationsData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    PostV1LocationsResponse,
+    PostV1LocationsError,
+    Options<PostV1LocationsData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await postV1Locations({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const getV1GearQueryKey = (options?: Options<GetV1GearData>) =>
+  createQueryKey("getV1Gear", options);
+
+/**
+ * Search published rental gear
+ */
+export const getV1GearOptions = (options?: Options<GetV1GearData>) =>
+  queryOptions<
+    GetV1GearResponse,
+    DefaultError,
+    GetV1GearResponse,
+    ReturnType<typeof getV1GearQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await getV1Gear({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: getV1GearQueryKey(options),
+  });
+
+/**
+ * Create a rental gear listing
+ *
+ * Requires owner or admin. Day-rate kit only. `serialNumber` and `accessories` are stored.
+ */
+export const postV1GearMutation = (
+  options?: Partial<Options<PostV1GearData>>,
+): UseMutationOptions<
+  PostV1GearResponse,
+  PostV1GearError,
+  Options<PostV1GearData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    PostV1GearResponse,
+    PostV1GearError,
+    Options<PostV1GearData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await postV1Gear({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const getV1GearSaleQueryKey = (options?: Options<GetV1GearSaleData>) =>
+  createQueryKey("getV1GearSale", options);
+
+/**
+ * Search gear for sale
+ */
+export const getV1GearSaleOptions = (options?: Options<GetV1GearSaleData>) =>
+  queryOptions<
+    GetV1GearSaleResponse,
+    DefaultError,
+    GetV1GearSaleResponse,
+    ReturnType<typeof getV1GearSaleQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await getV1GearSale({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: getV1GearSaleQueryKey(options),
+  });
+
+/**
+ * Create a gear-for-sale listing
+ *
+ * Separate from rental. Purchase workflow is not live. Requires owner or admin.
+ */
+export const postV1GearSaleMutation = (
+  options?: Partial<Options<PostV1GearSaleData>>,
+): UseMutationOptions<
+  PostV1GearSaleResponse,
+  PostV1GearSaleError,
+  Options<PostV1GearSaleData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    PostV1GearSaleResponse,
+    PostV1GearSaleError,
+    Options<PostV1GearSaleData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await postV1GearSale({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const getV1ListingsByIdQueryKey = (
+  options: Options<GetV1ListingsByIdData>,
+) => createQueryKey("getV1ListingsById", options);
+
+/**
+ * Listing detail
+ */
+export const getV1ListingsByIdOptions = (
+  options: Options<GetV1ListingsByIdData>,
+) =>
+  queryOptions<
+    GetV1ListingsByIdResponse,
+    GetV1ListingsByIdError,
+    GetV1ListingsByIdResponse,
+    ReturnType<typeof getV1ListingsByIdQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await getV1ListingsById({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: getV1ListingsByIdQueryKey(options),
+  });
+
+export const getV1CastQueryKey = (options?: Options<GetV1CastData>) =>
+  createQueryKey("getV1Cast", options);
+
+/**
+ * Talent board and open calls
+ */
+export const getV1CastOptions = (options?: Options<GetV1CastData>) =>
+  queryOptions<
+    GetV1CastResponse,
+    DefaultError,
+    GetV1CastResponse,
+    ReturnType<typeof getV1CastQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await getV1Cast({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: getV1CastQueryKey(options),
+  });
+
+export const getV1CastTalentByIdQueryKey = (
+  options: Options<GetV1CastTalentByIdData>,
+) => createQueryKey("getV1CastTalentById", options);
+
+/**
+ * Talent listing with owner profile
+ */
+export const getV1CastTalentByIdOptions = (
+  options: Options<GetV1CastTalentByIdData>,
+) =>
+  queryOptions<
+    GetV1CastTalentByIdResponse,
+    GetV1CastTalentByIdError,
+    GetV1CastTalentByIdResponse,
+    ReturnType<typeof getV1CastTalentByIdQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await getV1CastTalentById({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: getV1CastTalentByIdQueryKey(options),
+  });
+
+/**
+ * Create a talent listing
+ *
+ * Requires talent or admin.
+ */
+export const postV1CastTalentMutation = (
+  options?: Partial<Options<PostV1CastTalentData>>,
+): UseMutationOptions<
+  PostV1CastTalentResponse,
+  PostV1CastTalentError,
+  Options<PostV1CastTalentData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    PostV1CastTalentResponse,
+    PostV1CastTalentError,
+    Options<PostV1CastTalentData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await postV1CastTalent({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const getV1CastCallsQueryKey = (options?: Options<GetV1CastCallsData>) =>
+  createQueryKey("getV1CastCalls", options);
+
+/**
+ * All casting calls
+ */
+export const getV1CastCallsOptions = (options?: Options<GetV1CastCallsData>) =>
+  queryOptions<
+    GetV1CastCallsResponse,
+    DefaultError,
+    GetV1CastCallsResponse,
+    ReturnType<typeof getV1CastCallsQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await getV1CastCalls({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: getV1CastCallsQueryKey(options),
+  });
+
+/**
+ * Post a casting call
+ */
+export const postV1CastCallsMutation = (
+  options?: Partial<Options<PostV1CastCallsData>>,
+): UseMutationOptions<
+  PostV1CastCallsResponse,
+  PostV1CastCallsError,
+  Options<PostV1CastCallsData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    PostV1CastCallsResponse,
+    PostV1CastCallsError,
+    Options<PostV1CastCallsData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await postV1CastCalls({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Apply to a call
+ *
+ * Requires talent or admin. 404 if the call is missing. Upserts on (callId, talentId).
+ */
+export const postV1CastCallsByIdApplyMutation = (
+  options?: Partial<Options<PostV1CastCallsByIdApplyData>>,
+): UseMutationOptions<
+  PostV1CastCallsByIdApplyResponse,
+  PostV1CastCallsByIdApplyError,
+  Options<PostV1CastCallsByIdApplyData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    PostV1CastCallsByIdApplyResponse,
+    PostV1CastCallsByIdApplyError,
+    Options<PostV1CastCallsByIdApplyData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await postV1CastCallsByIdApply({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const getV1BookingsQueryKey = (options?: Options<GetV1BookingsData>) =>
+  createQueryKey("getV1Bookings", options);
+
+/**
+ * Bookings for the signed-in user
+ */
+export const getV1BookingsOptions = (options?: Options<GetV1BookingsData>) =>
+  queryOptions<
+    GetV1BookingsResponse,
+    GetV1BookingsError,
+    GetV1BookingsResponse,
+    ReturnType<typeof getV1BookingsQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await getV1Bookings({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: getV1BookingsQueryKey(options),
+  });
+
+/**
+ * Request a booking
+ *
+ * Published location, gear, or talent listings. gear_sale cannot be booked. Talent hire is the same request desk, not licensed escrow. Overlapping active dates are rejected.
+ */
+export const postV1BookingsMutation = (
+  options?: Partial<Options<PostV1BookingsData>>,
+): UseMutationOptions<
+  PostV1BookingsResponse,
+  PostV1BookingsError,
+  Options<PostV1BookingsData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    PostV1BookingsResponse,
+    PostV1BookingsError,
+    Options<PostV1BookingsData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await postV1Bookings({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const getV1BookingsByIdQueryKey = (
+  options: Options<GetV1BookingsByIdData>,
+) => createQueryKey("getV1BookingsById", options);
+
+/**
+ * Booking thread
+ */
+export const getV1BookingsByIdOptions = (
+  options: Options<GetV1BookingsByIdData>,
+) =>
+  queryOptions<
+    GetV1BookingsByIdResponse,
+    GetV1BookingsByIdError,
+    GetV1BookingsByIdResponse,
+    ReturnType<typeof getV1BookingsByIdQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await getV1BookingsById({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: getV1BookingsByIdQueryKey(options),
+  });
+
+/**
+ * Owner accepts (awaiting_funds)
+ */
+export const postV1BookingsByIdAcceptMutation = (
+  options?: Partial<Options<PostV1BookingsByIdAcceptData>>,
+): UseMutationOptions<
+  PostV1BookingsByIdAcceptResponse,
+  PostV1BookingsByIdAcceptError,
+  Options<PostV1BookingsByIdAcceptData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    PostV1BookingsByIdAcceptResponse,
+    PostV1BookingsByIdAcceptError,
+    Options<PostV1BookingsByIdAcceptData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await postV1BookingsByIdAccept({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Owner declines
+ */
+export const postV1BookingsByIdDeclineMutation = (
+  options?: Partial<Options<PostV1BookingsByIdDeclineData>>,
+): UseMutationOptions<
+  PostV1BookingsByIdDeclineResponse,
+  PostV1BookingsByIdDeclineError,
+  Options<PostV1BookingsByIdDeclineData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    PostV1BookingsByIdDeclineResponse,
+    PostV1BookingsByIdDeclineError,
+    Options<PostV1BookingsByIdDeclineData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await postV1BookingsByIdDecline({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Owner or admin marks paid
+ *
+ * Updates booking to confirmed and writes an escrow.manual ledger line in one transaction. Paystack is a stub.
+ */
+export const postV1BookingsByIdMarkPaidMutation = (
+  options?: Partial<Options<PostV1BookingsByIdMarkPaidData>>,
+): UseMutationOptions<
+  PostV1BookingsByIdMarkPaidResponse,
+  PostV1BookingsByIdMarkPaidError,
+  Options<PostV1BookingsByIdMarkPaidData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    PostV1BookingsByIdMarkPaidResponse,
+    PostV1BookingsByIdMarkPaidError,
+    Options<PostV1BookingsByIdMarkPaidData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await postV1BookingsByIdMarkPaid({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Add a thread message
+ */
+export const postV1BookingsByIdMessagesMutation = (
+  options?: Partial<Options<PostV1BookingsByIdMessagesData>>,
+): UseMutationOptions<
+  PostV1BookingsByIdMessagesResponse,
+  PostV1BookingsByIdMessagesError,
+  Options<PostV1BookingsByIdMessagesData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    PostV1BookingsByIdMessagesResponse,
+    PostV1BookingsByIdMessagesError,
+    Options<PostV1BookingsByIdMessagesData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await postV1BookingsByIdMessages({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * File a handoff report
+ *
+ * Optional image, max 8MB. Gear listings move to `handoff_out` or `closed`.
+ */
+export const postV1BookingsByIdHandoffMutation = (
+  options?: Partial<Options<PostV1BookingsByIdHandoffData>>,
+): UseMutationOptions<
+  PostV1BookingsByIdHandoffResponse,
+  PostV1BookingsByIdHandoffError,
+  Options<PostV1BookingsByIdHandoffData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    PostV1BookingsByIdHandoffResponse,
+    PostV1BookingsByIdHandoffError,
+    Options<PostV1BookingsByIdHandoffData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await postV1BookingsByIdHandoff({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Create a professional plan plus catalog rentals
+ */
+export const postV1PlannerMutation = (
+  options?: Partial<Options<PostV1PlannerData>>,
+): UseMutationOptions<
+  PostV1PlannerResponse,
+  PostV1PlannerError,
+  Options<PostV1PlannerData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    PostV1PlannerResponse,
+    PostV1PlannerError,
+    Options<PostV1PlannerData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await postV1Planner({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const getV1PlannerConversationsByIdQueryKey = (
+  options: Options<GetV1PlannerConversationsByIdData>,
+) => createQueryKey("getV1PlannerConversationsById", options);
+
+/**
+ * Load a saved plan
+ *
+ * Owner or admin only.
+ */
+export const getV1PlannerConversationsByIdOptions = (
+  options: Options<GetV1PlannerConversationsByIdData>,
+) =>
+  queryOptions<
+    GetV1PlannerConversationsByIdResponse,
+    GetV1PlannerConversationsByIdError,
+    GetV1PlannerConversationsByIdResponse,
+    ReturnType<typeof getV1PlannerConversationsByIdQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await getV1PlannerConversationsById({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: getV1PlannerConversationsByIdQueryKey(options),
+  });
+
+export const getV1AdminOpsQueryKey = (options?: Options<GetV1AdminOpsData>) =>
+  createQueryKey("getV1AdminOps", options);
+
+/**
+ * Ops snapshot
+ */
+export const getV1AdminOpsOptions = (options?: Options<GetV1AdminOpsData>) =>
+  queryOptions<
+    GetV1AdminOpsResponse,
+    GetV1AdminOpsError,
+    GetV1AdminOpsResponse,
+    ReturnType<typeof getV1AdminOpsQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await getV1AdminOps({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: getV1AdminOpsQueryKey(options),
+  });
+
+/**
+ * Publish or reject a listing
+ */
+export const postV1AdminListingsByIdReviewMutation = (
+  options?: Partial<Options<PostV1AdminListingsByIdReviewData>>,
+): UseMutationOptions<
+  PostV1AdminListingsByIdReviewResponse,
+  PostV1AdminListingsByIdReviewError,
+  Options<PostV1AdminListingsByIdReviewData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    PostV1AdminListingsByIdReviewResponse,
+    PostV1AdminListingsByIdReviewError,
+    Options<PostV1AdminListingsByIdReviewData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await postV1AdminListingsByIdReview({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Create an unlisted public pin
+ */
+export const postV1AdminPinsMutation = (
+  options?: Partial<Options<PostV1AdminPinsData>>,
+): UseMutationOptions<
+  PostV1AdminPinsResponse,
+  PostV1AdminPinsError,
+  Options<PostV1AdminPinsData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    PostV1AdminPinsResponse,
+    PostV1AdminPinsError,
+    Options<PostV1AdminPinsData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await postV1AdminPins({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Log feedback
+ *
+ * Does not write to Postgres. Auth is optional.
+ */
+export const postV1IssuesMutation = (
+  options?: Partial<Options<PostV1IssuesData>>,
+): UseMutationOptions<
+  PostV1IssuesResponse,
+  PostV1IssuesError,
+  Options<PostV1IssuesData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    PostV1IssuesResponse,
+    PostV1IssuesError,
+    Options<PostV1IssuesData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await postV1Issues({
         ...options,
         ...fnOptions,
         throwOnError: true,

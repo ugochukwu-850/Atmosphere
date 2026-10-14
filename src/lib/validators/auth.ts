@@ -1,12 +1,12 @@
 import { z } from "zod";
 
-export const ROLES = ["renter", "owner", "creator"] as const;
-export type Role = (typeof ROLES)[number] | "admin" | "ops";
+export const ROLES = ["renter", "owner", "talent"] as const;
+export type Role = (typeof ROLES)[number] | "admin";
 
 export const ROLE_LABELS: Record<(typeof ROLES)[number], string> = {
   renter: "Renter",
   owner: "Owner (list locations and gear)",
-  creator: "Creator / cast",
+  talent: "Creator / cast",
 };
 
 export const loginSchema = z.object({
@@ -15,13 +15,14 @@ export const loginSchema = z.object({
 });
 
 export const registerSchema = z.object({
-  name: z.string().trim().min(2, "Enter your name"),
+  name: z.string().trim().min(2, "Enter your name").max(80),
   email: z.email("Enter a valid email"),
   phone: z
     .string()
     .trim()
-    .regex(/^\+?[0-9 ]{10,15}$/, "Enter a valid phone number"),
-  password: z.string().min(8, "Use at least 8 characters"),
+    .min(8, "Enter a valid phone number")
+    .max(24, "Enter a valid phone number"),
+  password: z.string().min(8, "Use at least 8 characters").max(72, "Use 72 characters or fewer"),
   roles: z.array(z.enum(ROLES)).min(1, "Pick at least one role"),
 });
 

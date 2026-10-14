@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
 
 import { RequestCard } from "@/components/booking/RequestCard";
@@ -11,14 +11,14 @@ import { MapView } from "@/components/map/MapView";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Container } from "@/components/ui/typography";
-import type { Listing } from "@/lib/api/generated";
 import { getSessionToken } from "@/lib/auth/session";
-import { getListing } from "@/lib/data/catalog";
+import { getItem } from "@/lib/data/catalog";
+import type { ItemKind } from "@/lib/data/types";
 import { formatNgn, titleCase } from "@/lib/format";
 
 export async function generateMetadata({ params }: PageProps<"/listings/[id]">): Promise<Metadata> {
-  const listing = await getListing((await params).id);
-  return listing ? { title: listing.title, description: listing.description } : {};
+  const item = await getItem((await params).id);
+  return item ? { title: item.title, description: item.description } : {};
 }
 
 // `params` is request-time data under cacheComponents, so it is read inside Suspense.
@@ -30,19 +30,28 @@ export default function ListingPage({ params }: PageProps<"/listings/[id]">) {
   );
 }
 
-const BACK: Record<Listing["kind"], { href: string; label: string }> = {
+const BACK: Record<Exclude<ItemKind, "talent">, { href: string; label: string }> = {
   location: { href: "/locations", label: "Locations" },
-  gear_rent: { href: "/gear", label: "Rent gear" },
+  gear: { href: "/gear", label: "Rent gear" },
   gear_sale: { href: "/gear/sale", label: "Buy gear" },
 };
 
+/** Kit contents arrive as free text ("ballast, dome, 5m power"). */
+const kitItems = (accessories?: string) =>
+  (accessories ?? "")
+    .split(/[,;\n]/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+
 async function ListingContent({ params }: Pick<PageProps<"/listings/[id]">, "params">) {
   const { id } = await params;
-  const [listing, token] = await Promise.all([getListing(id), getSessionToken()]);
-  if (!listing) notFound();
+  const [item, token] = await Promise.all([getItem(id), getSessionToken()]);
+  if (!item) notFound();
+  if (item.kind === "talent") redirect(`/cast/talent/${item.id}`);
 
-  const back = BACK[listing.kind];
-  const hasPin = listing.place.lat !== undefined && listing.place.lng !== undefined;
+  const back = BACK[item.kind];
+  const isGear = item.kind !== "location";
+  const kit = kitItems(item.accessories);
 
   return (
     <Container className="flex flex-col gap-8 py-8">
@@ -50,116 +59,72 @@ async function ListingContent({ params }: Pick<PageProps<"/listings/[id]">, "par
         <Link href={back.href} className="hover:text-foreground">
           {back.label}
         </Link>{" "}
-        / <span className="text-foreground">{listing.title}</span>
+        / <span className="text-foreground">{item.title}</span>
       </nav>
 
       <header className="flex flex-col gap-3">
         <div className="flex flex-wrap gap-2">
-          <Badge variant="primary">{titleCase(listing.category)}</Badge>
-          {listing.status !== "published" && <Badge>{titleCase(listing.status)}</Badge>}
+          {item.category && <Badge variant="primary">{titleCase(item.category)}</Badge>}
+          {item.status !== "published" && <Badge>{titleCase(item.status)}</Badge>}
         </div>
-        <h1 className="text-4xl font-bold md:text-5xl">{listing.title}</h1>
+        <h1 className="text-4xl font-bold md:text-5xl">{item.title}</h1>
         <p className="text-muted-foreground">
-          {placeLabel(listing.place)} · Listed by{" "}
-          <Link href={`/people/${listing.owner.id}`} className="font-medium text-foreground hover:text-primary">
-            {listing.owner.name}
-          </Link>
+          {placeLabel(item)}
+          {item.owner && (
+            <>
+              {" · Listed by "}
+              <Link href={`/people/${item.owner.id}`} className="font-medium text-foreground hover:text-primary">
+                {item.owner.name}
+              </Link>
+            </>
+          )}
         </p>
       </header>
 
-      <Gallery photos={listing.photos} title={listing.title} />
+      <Gallery photoUrl={item.photoUrl} title={item.title} />
 
       <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_24rem]">
         <div className="flex flex-col gap-8">
           <section className="flex flex-col gap-3">
-            <h2 className="text-xl font-semibold">
-              {listing.kind === "location" ? "About this space" : "About this kit"}
-            </h2>
-            <p className="leading-relaxed text-muted-foreground">{listing.description}</p>
-            {listing.location && (
-              <dl className="flex flex-wrap gap-x-8 gap-y-2 text-sm">
-                {listing.location.sizeSqm && (
-                  <div>
-                    <dt className="text-muted-foreground">Size</dt>
-                    <dd className="font-medium">{listing.location.sizeSqm} m²</dd>
-                  </div>
-                )}
-                {listing.location.capacity && (
-                  <div>
-                    <dt className="text-muted-foreground">Crew capacity</dt>
-                    <dd className="font-medium">{listing.location.capacity} people</dd>
-                  </div>
-                )}
-              </dl>
-            )}
+            <h2 className="text-xl font-semibold">{isGear ? "About this kit" : "About this space"}</h2>
+            <p className="leading-relaxed text-muted-foreground">{item.description}</p>
           </section>
 
-          {listing.location?.amenities?.length ? (
-            <DetailSection title="Amenities">
-              <TagList items={listing.location.amenities} />
-            </DetailSection>
-          ) : null}
-
-          {listing.gear && (
+          {isGear && (item.serialNumber || kit.length > 0) && (
             <DetailSection title="Kit details">
-              <dl className="grid gap-4 text-sm sm:grid-cols-2">
-                {listing.gear.brand && (
-                  <div>
-                    <dt className="text-muted-foreground">Make and model</dt>
-                    <dd className="font-medium">
-                      {listing.gear.brand} {listing.gear.model}
-                    </dd>
-                  </div>
-                )}
-                {listing.gear.serial && (
-                  <div>
-                    <dt className="text-muted-foreground">Serial</dt>
-                    <dd className="font-mono font-medium">{listing.gear.serial}</dd>
-                  </div>
-                )}
-                {listing.gear.condition && (
-                  <div>
-                    <dt className="text-muted-foreground">Condition</dt>
-                    <dd className="font-medium">{titleCase(listing.gear.condition)}</dd>
-                  </div>
-                )}
-              </dl>
-              {listing.gear.kitContents?.length ? (
+              {item.serialNumber && (
+                <dl className="text-sm">
+                  <dt className="text-muted-foreground">Serial</dt>
+                  <dd className="font-mono font-medium">{item.serialNumber}</dd>
+                </dl>
+              )}
+              {kit.length > 0 && (
                 <>
                   <p className="text-sm text-muted-foreground">In the kit</p>
-                  <TagList items={listing.gear.kitContents} />
+                  <TagList items={kit} />
                 </>
-              ) : null}
+              )}
             </DetailSection>
           )}
 
-          {listing.location?.rules?.length ? (
-            <DetailSection title="House rules">
-              <ul className="list-disc pl-5 text-sm text-muted-foreground">
-                {listing.location.rules.map((rule) => (
-                  <li key={rule}>{rule}</li>
-                ))}
-              </ul>
+          {item.owner && (
+            <DetailSection title={`About ${item.owner.name}`}>
+              {item.owner.bio && <p className="text-sm text-muted-foreground">{item.owner.bio}</p>}
+              <Link href={`/people/${item.owner.id}`} className="text-sm font-medium text-primary hover:underline">
+                View profile
+              </Link>
             </DetailSection>
-          ) : null}
+          )}
 
-          {hasPin && (
+          {item.lat !== undefined && item.lng !== undefined && (
             <DetailSection title="Where it is">
               <p className="text-sm text-muted-foreground">
-                {listing.location?.accessNotes ?? "Exact address is shared once the request is accepted."}
+                {item.neighborhood}, {item.city}. The exact address is shared once the request is accepted.
               </p>
               <MapView
-                center={{ lat: listing.place.lat!, lng: listing.place.lng! }}
+                center={{ lat: item.lat, lng: item.lng }}
                 zoom={14}
-                markers={[
-                  {
-                    id: listing.id,
-                    title: listing.title,
-                    lat: listing.place.lat!,
-                    lng: listing.place.lng!,
-                    kind: "bookable",
-                  },
-                ]}
+                markers={[{ id: item.id, title: item.title, lat: item.lat, lng: item.lng, kind: "bookable" }]}
                 className="h-72"
               />
             </DetailSection>
@@ -167,24 +132,26 @@ async function ListingContent({ params }: Pick<PageProps<"/listings/[id]">, "par
         </div>
 
         <aside className="lg:sticky lg:top-24 lg:self-start">
-          {listing.kind === "gear_sale" ? (
+          {item.kind === "gear_sale" ? (
             <Card className="flex flex-col gap-3 p-6">
               <p className="font-heading text-2xl font-bold">
-                {formatNgn(listing.askingPriceNgn ?? 0)}
+                {formatNgn(item.salePriceNgn)}
                 <span className="text-sm font-normal text-muted-foreground"> asking</span>
               </p>
               <p className="text-sm text-muted-foreground">
-                Purchase requests and checkout are coming soon. Message the seller from their profile.
+                Purchase requests and checkout are coming soon. Contact the seller from their profile.
               </p>
-              <Link href={`/people/${listing.owner.id}`} className="text-sm font-medium text-primary hover:underline">
-                View {listing.owner.name}&apos;s profile
-              </Link>
+              {item.owner && (
+                <Link href={`/people/${item.owner.id}`} className="text-sm font-medium text-primary hover:underline">
+                  View {item.owner.name}&apos;s profile
+                </Link>
+              )}
             </Card>
           ) : (
             <RequestCard
-              target={{ listingId: listing.id }}
-              dayRateNgn={listing.dayRateNgn ?? 0}
-              verb={listing.kind === "location" ? "Request booking" : "Request rental"}
+              listingId={item.id}
+              dayRateNgn={item.dayRateNgn}
+              verb={item.kind === "location" ? "Request booking" : "Request rental"}
               noteLabel="Note to owner"
               signedIn={Boolean(token)}
               disclaimer="You won't be charged yet. The owner confirms dates and payment."

@@ -2,188 +2,185 @@
 
 import * as z from "zod";
 
-import type {
-  Client,
-  ClientMeta,
-  Options as Options2,
-  RequestResult,
-  TDataShape,
+import {
+  type Client,
+  type ClientMeta,
+  formDataBodySerializer,
+  type Options as Options2,
+  type RequestResult,
+  type TDataShape,
 } from "./client";
 import { client } from "./client.gen";
 import type {
-  AddRoleData,
-  AddRoleResponses,
-  ArchiveListingData,
-  ArchiveListingErrors,
-  ArchiveListingResponses,
-  CreateBookingData,
-  CreateBookingErrors,
-  CreateBookingResponses,
-  CreateCastingCallData,
-  CreateCastingCallErrors,
-  CreateCastingCallResponses,
-  CreateListingData,
-  CreateListingErrors,
-  CreateListingResponses,
-  CreatePlanData,
-  CreatePlanErrors,
-  CreatePlanResponses,
-  ExpressInterestData,
-  ExpressInterestErrors,
-  ExpressInterestResponses,
-  GetBookingData,
-  GetBookingErrors,
-  GetBookingResponses,
-  GetCastingCallData,
-  GetCastingCallErrors,
-  GetCastingCallResponses,
-  GetCurrentUserData,
-  GetCurrentUserErrors,
-  GetCurrentUserResponses,
-  GetListingAvailabilityData,
-  GetListingAvailabilityResponses,
-  GetListingData,
-  GetListingErrors,
-  GetListingResponses,
-  GetPlanData,
-  GetPlanErrors,
-  GetPlanResponses,
-  GetPublicProfileData,
-  GetPublicProfileErrors,
-  GetPublicProfileResponses,
-  GetTalentData,
-  GetTalentErrors,
-  GetTalentResponses,
-  ListAuthProvidersData,
-  ListAuthProvidersResponses,
-  ListBookingMessagesData,
-  ListBookingMessagesResponses,
-  ListBookingsData,
-  ListBookingsResponses,
-  ListCastingCallsData,
-  ListCastingCallsResponses,
-  ListCitiesData,
-  ListCitiesResponses,
-  ListListingsData,
-  ListListingsResponses,
-  ListMyListingsData,
-  ListMyListingsResponses,
-  ListPlansData,
-  ListPlansResponses,
-  ListScoutPinsData,
-  ListScoutPinsResponses,
-  ListTalentData,
-  ListTalentResponses,
-  LoginData,
-  LoginErrors,
-  LoginResponses,
-  LogoutData,
-  LogoutResponses,
-  RecordHandoffData,
-  RecordHandoffResponses,
-  RegisterData,
-  RegisterErrors,
-  RegisterResponses,
-  ReportIssueData,
-  ReportIssueResponses,
-  RequestMagicLinkData,
-  RequestMagicLinkResponses,
-  SendBookingMessageData,
-  SendBookingMessageResponses,
-  TransitionBookingData,
-  TransitionBookingErrors,
-  TransitionBookingResponses,
-  UpdateListingData,
-  UpdateListingErrors,
-  UpdateListingResponses,
-  UpdateProfileData,
-  UpdateProfileErrors,
-  UpdateProfileResponses,
-  UpdateSocialsData,
-  UpdateSocialsResponses,
-  UpsertMyTalentProfileData,
-  UpsertMyTalentProfileErrors,
-  UpsertMyTalentProfileResponses,
-  VerifyMagicLinkData,
-  VerifyMagicLinkErrors,
-  VerifyMagicLinkResponses,
+  GetHealthData,
+  GetHealthResponses,
+  GetV1AdminOpsData,
+  GetV1AdminOpsErrors,
+  GetV1AdminOpsResponses,
+  GetV1AuthMeData,
+  GetV1AuthMeErrors,
+  GetV1AuthMeResponses,
+  GetV1AuthOauthByProviderCallbackData,
+  GetV1AuthOauthByProviderData,
+  GetV1AuthOauthByProviderErrors,
+  GetV1AuthOauthByProviderResponses,
+  GetV1AuthSessionData,
+  GetV1AuthSessionErrors,
+  GetV1AuthSessionResponses,
+  GetV1AuthSsoData,
+  GetV1AuthSsoResponses,
+  GetV1BookingsByIdData,
+  GetV1BookingsByIdErrors,
+  GetV1BookingsByIdResponses,
+  GetV1BookingsData,
+  GetV1BookingsErrors,
+  GetV1BookingsResponses,
+  GetV1CastCallsData,
+  GetV1CastCallsResponses,
+  GetV1CastData,
+  GetV1CastResponses,
+  GetV1CastTalentByIdData,
+  GetV1CastTalentByIdErrors,
+  GetV1CastTalentByIdResponses,
+  GetV1CatalogHomeData,
+  GetV1CatalogHomeResponses,
+  GetV1CatalogPlacesData,
+  GetV1CatalogPlacesResponses,
+  GetV1GearData,
+  GetV1GearResponses,
+  GetV1GearSaleData,
+  GetV1GearSaleResponses,
+  GetV1ListingsByIdData,
+  GetV1ListingsByIdErrors,
+  GetV1ListingsByIdResponses,
+  GetV1LocationsData,
+  GetV1LocationsResponses,
+  GetV1PlannerConversationsByIdData,
+  GetV1PlannerConversationsByIdErrors,
+  GetV1PlannerConversationsByIdResponses,
+  GetV1UsersByIdData,
+  GetV1UsersByIdErrors,
+  GetV1UsersByIdFeedData,
+  GetV1UsersByIdFeedErrors,
+  GetV1UsersByIdFeedResponses,
+  GetV1UsersByIdResponses,
+  GetV1UsersMeData,
+  GetV1UsersMeErrors,
+  GetV1UsersMeResponses,
+  PatchV1UsersMeData,
+  PatchV1UsersMeErrors,
+  PatchV1UsersMeResponses,
+  PostV1AdminListingsByIdReviewData,
+  PostV1AdminListingsByIdReviewErrors,
+  PostV1AdminListingsByIdReviewResponses,
+  PostV1AdminPinsData,
+  PostV1AdminPinsErrors,
+  PostV1AdminPinsResponses,
+  PostV1AuthEmailConsumeData,
+  PostV1AuthEmailConsumeErrors,
+  PostV1AuthEmailConsumeResponses,
+  PostV1AuthEmailData,
+  PostV1AuthEmailErrors,
+  PostV1AuthEmailResponses,
+  PostV1AuthLoginData,
+  PostV1AuthLoginErrors,
+  PostV1AuthLoginResponses,
+  PostV1AuthLogoutData,
+  PostV1AuthLogoutResponses,
+  PostV1AuthRegisterData,
+  PostV1AuthRegisterErrors,
+  PostV1AuthRegisterResponses,
+  PostV1BookingsByIdAcceptData,
+  PostV1BookingsByIdAcceptErrors,
+  PostV1BookingsByIdAcceptResponses,
+  PostV1BookingsByIdDeclineData,
+  PostV1BookingsByIdDeclineErrors,
+  PostV1BookingsByIdDeclineResponses,
+  PostV1BookingsByIdHandoffData,
+  PostV1BookingsByIdHandoffErrors,
+  PostV1BookingsByIdHandoffResponses,
+  PostV1BookingsByIdMarkPaidData,
+  PostV1BookingsByIdMarkPaidErrors,
+  PostV1BookingsByIdMarkPaidResponses,
+  PostV1BookingsByIdMessagesData,
+  PostV1BookingsByIdMessagesErrors,
+  PostV1BookingsByIdMessagesResponses,
+  PostV1BookingsData,
+  PostV1BookingsErrors,
+  PostV1BookingsResponses,
+  PostV1CastCallsByIdApplyData,
+  PostV1CastCallsByIdApplyErrors,
+  PostV1CastCallsByIdApplyResponses,
+  PostV1CastCallsData,
+  PostV1CastCallsErrors,
+  PostV1CastCallsResponses,
+  PostV1CastTalentData,
+  PostV1CastTalentErrors,
+  PostV1CastTalentResponses,
+  PostV1GearData,
+  PostV1GearErrors,
+  PostV1GearResponses,
+  PostV1GearSaleData,
+  PostV1GearSaleErrors,
+  PostV1GearSaleResponses,
+  PostV1IssuesData,
+  PostV1IssuesErrors,
+  PostV1IssuesResponses,
+  PostV1LocationsData,
+  PostV1LocationsErrors,
+  PostV1LocationsResponses,
+  PostV1PlannerData,
+  PostV1PlannerErrors,
+  PostV1PlannerResponses,
+  PostV1UsersMeRolesData,
+  PostV1UsersMeRolesErrors,
+  PostV1UsersMeRolesResponses,
+  PutV1UsersMeSocialData,
+  PutV1UsersMeSocialErrors,
+  PutV1UsersMeSocialResponses,
 } from "./types.gen";
 import {
-  zAddRoleBody,
-  zAddRoleResponse,
-  zArchiveListingPath,
-  zArchiveListingResponse,
-  zCreateBookingBody,
-  zCreateBookingResponse,
-  zCreateCastingCallBody,
-  zCreateCastingCallResponse,
-  zCreateListingBody,
-  zCreateListingResponse,
-  zCreatePlanBody,
-  zCreatePlanResponse,
-  zExpressInterestBody,
-  zExpressInterestPath,
-  zExpressInterestResponse,
-  zGetBookingPath,
-  zGetBookingResponse,
-  zGetCastingCallPath,
-  zGetCastingCallResponse,
-  zGetCurrentUserResponse,
-  zGetListingAvailabilityPath,
-  zGetListingAvailabilityQuery,
-  zGetListingAvailabilityResponse,
-  zGetListingPath,
-  zGetListingResponse,
-  zGetPlanPath,
-  zGetPlanResponse,
-  zGetPublicProfilePath,
-  zGetPublicProfileResponse,
-  zGetTalentPath,
-  zGetTalentResponse,
-  zListAuthProvidersResponse,
-  zListBookingMessagesPath,
-  zListBookingMessagesResponse,
-  zListBookingsQuery,
-  zListBookingsResponse,
-  zListCastingCallsQuery,
-  zListCastingCallsResponse,
-  zListCitiesResponse,
-  zListListingsQuery,
-  zListListingsResponse,
-  zListMyListingsQuery,
-  zListMyListingsResponse,
-  zListPlansResponse,
-  zListScoutPinsQuery,
-  zListScoutPinsResponse,
-  zListTalentQuery,
-  zListTalentResponse,
-  zLoginBody,
-  zLoginResponse,
-  zLogoutResponse,
-  zRecordHandoffBody,
-  zRecordHandoffPath,
-  zRecordHandoffResponse,
-  zRegisterBody,
-  zRegisterResponse,
-  zReportIssueBody,
-  zRequestMagicLinkBody,
-  zSendBookingMessageBody,
-  zSendBookingMessagePath,
-  zSendBookingMessageResponse,
-  zTransitionBookingBody,
-  zTransitionBookingPath,
-  zTransitionBookingResponse,
-  zUpdateListingBody,
-  zUpdateListingPath,
-  zUpdateListingResponse,
-  zUpdateProfileBody,
-  zUpdateProfileResponse,
-  zUpdateSocialsBody,
-  zUpdateSocialsResponse,
-  zUpsertMyTalentProfileBody,
-  zUpsertMyTalentProfileResponse,
-  zVerifyMagicLinkBody,
-  zVerifyMagicLinkResponse,
+  zGetV1AuthOauthByProviderCallbackPath,
+  zGetV1AuthOauthByProviderPath,
+  zGetV1AuthOauthByProviderQuery,
+  zGetV1BookingsByIdPath,
+  zGetV1CastTalentByIdPath,
+  zGetV1CatalogHomeQuery,
+  zGetV1GearQuery,
+  zGetV1GearSaleQuery,
+  zGetV1ListingsByIdPath,
+  zGetV1LocationsQuery,
+  zGetV1PlannerConversationsByIdPath,
+  zGetV1UsersByIdFeedPath,
+  zGetV1UsersByIdFeedQuery,
+  zGetV1UsersByIdPath,
+  zPatchV1UsersMeBody,
+  zPostV1AdminListingsByIdReviewBody,
+  zPostV1AdminListingsByIdReviewPath,
+  zPostV1AdminPinsBody,
+  zPostV1AuthEmailBody,
+  zPostV1AuthEmailConsumeBody,
+  zPostV1AuthLoginBody,
+  zPostV1AuthRegisterBody,
+  zPostV1BookingsBody,
+  zPostV1BookingsByIdAcceptPath,
+  zPostV1BookingsByIdDeclinePath,
+  zPostV1BookingsByIdHandoffBody,
+  zPostV1BookingsByIdHandoffPath,
+  zPostV1BookingsByIdMarkPaidPath,
+  zPostV1BookingsByIdMessagesBody,
+  zPostV1BookingsByIdMessagesPath,
+  zPostV1CastCallsBody,
+  zPostV1CastCallsByIdApplyBody,
+  zPostV1CastCallsByIdApplyPath,
+  zPostV1CastTalentBody,
+  zPostV1GearBody,
+  zPostV1GearSaleBody,
+  zPostV1IssuesBody,
+  zPostV1LocationsBody,
+  zPostV1PlannerBody,
+  zPostV1UsersMeRolesBody,
+  zPutV1UsersMeSocialBody,
 } from "./zod.gen";
 
 export type Options<
@@ -205,107 +202,48 @@ export type Options<
 };
 
 /**
- * Sign in with email and password
+ * Health check
  */
-export const login = <ThrowOnError extends boolean = false>(
-  options: Options<LoginData, ThrowOnError>,
-): RequestResult<LoginResponses, LoginErrors, ThrowOnError> =>
-  (options.client ?? client).post<LoginResponses, LoginErrors, ThrowOnError>({
+export const getHealth = <ThrowOnError extends boolean = false>(
+  options?: Options<GetHealthData, ThrowOnError>,
+): RequestResult<GetHealthResponses, unknown, ThrowOnError> =>
+  (options?.client ?? client).get<GetHealthResponses, unknown, ThrowOnError>({
     requestValidator: async (data) =>
       await z
         .object({
-          body: zLoginBody,
+          body: z.never().optional(),
           path: z.never().optional(),
           query: z.never().optional(),
         })
         .parseAsync(data),
-    responseValidator: async (data) => await zLoginResponse.parseAsync(data),
-    url: "/auth/login",
+    url: "/health",
     ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
   });
 
 /**
- * Create an account (admins and ops are not created this way)
+ * Register and set session cookie
  */
-export const register = <ThrowOnError extends boolean = false>(
-  options: Options<RegisterData, ThrowOnError>,
-): RequestResult<RegisterResponses, RegisterErrors, ThrowOnError> =>
-  (options.client ?? client).post<
-    RegisterResponses,
-    RegisterErrors,
-    ThrowOnError
-  >({
-    requestValidator: async (data) =>
-      await z
-        .object({
-          body: zRegisterBody,
-          path: z.never().optional(),
-          query: z.never().optional(),
-        })
-        .parseAsync(data),
-    responseValidator: async (data) => await zRegisterResponse.parseAsync(data),
-    url: "/auth/register",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
-
-/**
- * Email a one-time sign-in link
- */
-export const requestMagicLink = <ThrowOnError extends boolean = false>(
-  options: Options<RequestMagicLinkData, ThrowOnError>,
-): RequestResult<RequestMagicLinkResponses, unknown, ThrowOnError> =>
-  (options.client ?? client).post<
-    RequestMagicLinkResponses,
-    unknown,
-    ThrowOnError
-  >({
-    requestValidator: async (data) =>
-      await z
-        .object({
-          body: zRequestMagicLinkBody,
-          path: z.never().optional(),
-          query: z.never().optional(),
-        })
-        .parseAsync(data),
-    url: "/auth/magic-link",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
-
-export const verifyMagicLink = <ThrowOnError extends boolean = false>(
-  options: Options<VerifyMagicLinkData, ThrowOnError>,
+export const postV1AuthRegister = <ThrowOnError extends boolean = false>(
+  options: Options<PostV1AuthRegisterData, ThrowOnError>,
 ): RequestResult<
-  VerifyMagicLinkResponses,
-  VerifyMagicLinkErrors,
+  PostV1AuthRegisterResponses,
+  PostV1AuthRegisterErrors,
   ThrowOnError
 > =>
   (options.client ?? client).post<
-    VerifyMagicLinkResponses,
-    VerifyMagicLinkErrors,
+    PostV1AuthRegisterResponses,
+    PostV1AuthRegisterErrors,
     ThrowOnError
   >({
     requestValidator: async (data) =>
       await z
         .object({
-          body: zVerifyMagicLinkBody,
+          body: zPostV1AuthRegisterBody,
           path: z.never().optional(),
           query: z.never().optional(),
         })
         .parseAsync(data),
-    responseValidator: async (data) =>
-      await zVerifyMagicLinkResponse.parseAsync(data),
-    url: "/auth/magic-link/verify",
+    url: "/v1/auth/register",
     ...options,
     headers: {
       "Content-Type": "application/json",
@@ -314,207 +252,47 @@ export const verifyMagicLink = <ThrowOnError extends boolean = false>(
   });
 
 /**
- * Social sign-in providers configured on the API
+ * Login and set session cookie
  */
-export const listAuthProviders = <ThrowOnError extends boolean = false>(
-  options?: Options<ListAuthProvidersData, ThrowOnError>,
-): RequestResult<ListAuthProvidersResponses, unknown, ThrowOnError> =>
-  (options?.client ?? client).get<
-    ListAuthProvidersResponses,
-    unknown,
-    ThrowOnError
-  >({
-    requestValidator: async (data) =>
-      await z
-        .object({
-          body: z.never().optional(),
-          path: z.never().optional(),
-          query: z.never().optional(),
-        })
-        .parseAsync(data),
-    responseValidator: async (data) =>
-      await zListAuthProvidersResponse.parseAsync(data),
-    url: "/auth/providers",
-    ...options,
-  });
-
-export const logout = <ThrowOnError extends boolean = false>(
-  options?: Options<LogoutData, ThrowOnError>,
-): RequestResult<LogoutResponses, unknown, ThrowOnError> =>
-  (options?.client ?? client).post<LogoutResponses, unknown, ThrowOnError>({
-    requestValidator: async (data) =>
-      await z
-        .object({
-          body: z.never().optional(),
-          path: z.never().optional(),
-          query: z.never().optional(),
-        })
-        .parseAsync(data),
-    responseValidator: async (data) => await zLogoutResponse.parseAsync(data),
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/auth/logout",
-    ...options,
-  });
-
-export const getCurrentUser = <ThrowOnError extends boolean = false>(
-  options?: Options<GetCurrentUserData, ThrowOnError>,
-): RequestResult<GetCurrentUserResponses, GetCurrentUserErrors, ThrowOnError> =>
-  (options?.client ?? client).get<
-    GetCurrentUserResponses,
-    GetCurrentUserErrors,
-    ThrowOnError
-  >({
-    requestValidator: async (data) =>
-      await z
-        .object({
-          body: z.never().optional(),
-          path: z.never().optional(),
-          query: z.never().optional(),
-        })
-        .parseAsync(data),
-    responseValidator: async (data) =>
-      await zGetCurrentUserResponse.parseAsync(data),
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/auth/me",
-    ...options,
-  });
-
-export const updateProfile = <ThrowOnError extends boolean = false>(
-  options: Options<UpdateProfileData, ThrowOnError>,
-): RequestResult<UpdateProfileResponses, UpdateProfileErrors, ThrowOnError> =>
-  (options.client ?? client).patch<
-    UpdateProfileResponses,
-    UpdateProfileErrors,
-    ThrowOnError
-  >({
-    requestValidator: async (data) =>
-      await z
-        .object({
-          body: zUpdateProfileBody,
-          path: z.never().optional(),
-          query: z.never().optional(),
-        })
-        .parseAsync(data),
-    responseValidator: async (data) =>
-      await zUpdateProfileResponse.parseAsync(data),
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/me/profile",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
-
-/**
- * Add a role without registering again
- */
-export const addRole = <ThrowOnError extends boolean = false>(
-  options: Options<AddRoleData, ThrowOnError>,
-): RequestResult<AddRoleResponses, unknown, ThrowOnError> =>
-  (options.client ?? client).post<AddRoleResponses, unknown, ThrowOnError>({
-    requestValidator: async (data) =>
-      await z
-        .object({
-          body: zAddRoleBody,
-          path: z.never().optional(),
-          query: z.never().optional(),
-        })
-        .parseAsync(data),
-    responseValidator: async (data) => await zAddRoleResponse.parseAsync(data),
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/me/roles",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
-
-export const updateSocials = <ThrowOnError extends boolean = false>(
-  options: Options<UpdateSocialsData, ThrowOnError>,
-): RequestResult<UpdateSocialsResponses, unknown, ThrowOnError> =>
-  (options.client ?? client).put<UpdateSocialsResponses, unknown, ThrowOnError>(
-    {
-      requestValidator: async (data) =>
-        await z
-          .object({
-            body: zUpdateSocialsBody,
-            path: z.never().optional(),
-            query: z.never().optional(),
-          })
-          .parseAsync(data),
-      responseValidator: async (data) =>
-        await zUpdateSocialsResponse.parseAsync(data),
-      security: [{ scheme: "bearer", type: "http" }],
-      url: "/me/socials",
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-    },
-  );
-
-/**
- * Listings I own, including pending ones
- */
-export const listMyListings = <ThrowOnError extends boolean = false>(
-  options?: Options<ListMyListingsData, ThrowOnError>,
-): RequestResult<ListMyListingsResponses, unknown, ThrowOnError> =>
-  (options?.client ?? client).get<
-    ListMyListingsResponses,
-    unknown,
-    ThrowOnError
-  >({
-    requestValidator: async (data) =>
-      await z
-        .object({
-          body: z.never().optional(),
-          path: z.never().optional(),
-          query: zListMyListingsQuery.optional(),
-        })
-        .parseAsync(data),
-    responseValidator: async (data) =>
-      await zListMyListingsResponse.parseAsync(data),
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/me/listings",
-    ...options,
-  });
-
-export const getPublicProfile = <ThrowOnError extends boolean = false>(
-  options: Options<GetPublicProfileData, ThrowOnError>,
+export const postV1AuthLogin = <ThrowOnError extends boolean = false>(
+  options: Options<PostV1AuthLoginData, ThrowOnError>,
 ): RequestResult<
-  GetPublicProfileResponses,
-  GetPublicProfileErrors,
+  PostV1AuthLoginResponses,
+  PostV1AuthLoginErrors,
   ThrowOnError
 > =>
-  (options.client ?? client).get<
-    GetPublicProfileResponses,
-    GetPublicProfileErrors,
+  (options.client ?? client).post<
+    PostV1AuthLoginResponses,
+    PostV1AuthLoginErrors,
     ThrowOnError
   >({
     requestValidator: async (data) =>
       await z
         .object({
-          body: z.never().optional(),
-          path: zGetPublicProfilePath,
+          body: zPostV1AuthLoginBody,
+          path: z.never().optional(),
           query: z.never().optional(),
         })
         .parseAsync(data),
-    responseValidator: async (data) =>
-      await zGetPublicProfileResponse.parseAsync(data),
-    url: "/users/{userId}",
+    url: "/v1/auth/login",
     ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
   });
 
 /**
- * Cities the catalog covers, with coordinates
+ * Clear session cookie
  */
-export const listCities = <ThrowOnError extends boolean = false>(
-  options?: Options<ListCitiesData, ThrowOnError>,
-): RequestResult<ListCitiesResponses, unknown, ThrowOnError> =>
-  (options?.client ?? client).get<ListCitiesResponses, unknown, ThrowOnError>({
+export const postV1AuthLogout = <ThrowOnError extends boolean = false>(
+  options?: Options<PostV1AuthLogoutData, ThrowOnError>,
+): RequestResult<PostV1AuthLogoutResponses, unknown, ThrowOnError> =>
+  (options?.client ?? client).post<
+    PostV1AuthLogoutResponses,
+    unknown,
+    ThrowOnError
+  >({
     requestValidator: async (data) =>
       await z
         .object({
@@ -523,254 +301,301 @@ export const listCities = <ThrowOnError extends boolean = false>(
           query: z.never().optional(),
         })
         .parseAsync(data),
-    responseValidator: async (data) =>
-      await zListCitiesResponse.parseAsync(data),
-    url: "/meta/cities",
+    url: "/v1/auth/logout",
     ...options,
   });
 
 /**
- * Search published locations and gear
- *
- * When `lat`/`lng` are set, results include `distanceKm` and sort closest first.
- *
+ * Current user (optional auth)
  */
-export const listListings = <ThrowOnError extends boolean = false>(
-  options?: Options<ListListingsData, ThrowOnError>,
-): RequestResult<ListListingsResponses, unknown, ThrowOnError> =>
-  (options?.client ?? client).get<ListListingsResponses, unknown, ThrowOnError>(
+export const getV1AuthMe = <ThrowOnError extends boolean = false>(
+  options?: Options<GetV1AuthMeData, ThrowOnError>,
+): RequestResult<GetV1AuthMeResponses, GetV1AuthMeErrors, ThrowOnError> =>
+  (options?.client ?? client).get<
+    GetV1AuthMeResponses,
+    GetV1AuthMeErrors,
+    ThrowOnError
+  >({
+    requestValidator: async (data) =>
+      await z
+        .object({
+          body: z.never().optional(),
+          path: z.never().optional(),
+          query: z.never().optional(),
+        })
+        .parseAsync(data),
+    url: "/v1/auth/me",
+    ...options,
+  });
+
+/**
+ * Which email/social SSO methods are configured
+ */
+export const getV1AuthSso = <ThrowOnError extends boolean = false>(
+  options?: Options<GetV1AuthSsoData, ThrowOnError>,
+): RequestResult<GetV1AuthSsoResponses, unknown, ThrowOnError> =>
+  (options?.client ?? client).get<GetV1AuthSsoResponses, unknown, ThrowOnError>(
     {
       requestValidator: async (data) =>
         await z
           .object({
             body: z.never().optional(),
             path: z.never().optional(),
-            query: zListListingsQuery.optional(),
+            query: z.never().optional(),
           })
           .parseAsync(data),
-      responseValidator: async (data) =>
-        await zListListingsResponse.parseAsync(data),
-      url: "/listings",
+      url: "/v1/auth/sso",
       ...options,
     },
   );
 
 /**
- * Create a listing (owner role); waits for admin publish unless ops
+ * Send an email magic-link (non-admins)
  */
-export const createListing = <ThrowOnError extends boolean = false>(
-  options: Options<CreateListingData, ThrowOnError>,
-): RequestResult<CreateListingResponses, CreateListingErrors, ThrowOnError> =>
-  (options.client ?? client).post<
-    CreateListingResponses,
-    CreateListingErrors,
-    ThrowOnError
-  >({
-    requestValidator: async (data) =>
-      await z
-        .object({
-          body: zCreateListingBody,
-          path: z.never().optional(),
-          query: z.never().optional(),
-        })
-        .parseAsync(data),
-    responseValidator: async (data) =>
-      await zCreateListingResponse.parseAsync(data),
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/listings",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
-
-export const archiveListing = <ThrowOnError extends boolean = false>(
-  options: Options<ArchiveListingData, ThrowOnError>,
-): RequestResult<ArchiveListingResponses, ArchiveListingErrors, ThrowOnError> =>
-  (options.client ?? client).delete<
-    ArchiveListingResponses,
-    ArchiveListingErrors,
-    ThrowOnError
-  >({
-    requestValidator: async (data) =>
-      await z
-        .object({
-          body: z.never().optional(),
-          path: zArchiveListingPath,
-          query: z.never().optional(),
-        })
-        .parseAsync(data),
-    responseValidator: async (data) =>
-      await zArchiveListingResponse.parseAsync(data),
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/listings/{listingId}",
-    ...options,
-  });
-
-export const getListing = <ThrowOnError extends boolean = false>(
-  options: Options<GetListingData, ThrowOnError>,
-): RequestResult<GetListingResponses, GetListingErrors, ThrowOnError> =>
-  (options.client ?? client).get<
-    GetListingResponses,
-    GetListingErrors,
-    ThrowOnError
-  >({
-    requestValidator: async (data) =>
-      await z
-        .object({
-          body: z.never().optional(),
-          path: zGetListingPath,
-          query: z.never().optional(),
-        })
-        .parseAsync(data),
-    responseValidator: async (data) =>
-      await zGetListingResponse.parseAsync(data),
-    url: "/listings/{listingId}",
-    ...options,
-  });
-
-export const updateListing = <ThrowOnError extends boolean = false>(
-  options: Options<UpdateListingData, ThrowOnError>,
-): RequestResult<UpdateListingResponses, UpdateListingErrors, ThrowOnError> =>
-  (options.client ?? client).patch<
-    UpdateListingResponses,
-    UpdateListingErrors,
-    ThrowOnError
-  >({
-    requestValidator: async (data) =>
-      await z
-        .object({
-          body: zUpdateListingBody,
-          path: zUpdateListingPath,
-          query: z.never().optional(),
-        })
-        .parseAsync(data),
-    responseValidator: async (data) =>
-      await zUpdateListingResponse.parseAsync(data),
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/listings/{listingId}",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
-
-export const getListingAvailability = <ThrowOnError extends boolean = false>(
-  options: Options<GetListingAvailabilityData, ThrowOnError>,
-): RequestResult<GetListingAvailabilityResponses, unknown, ThrowOnError> =>
-  (options.client ?? client).get<
-    GetListingAvailabilityResponses,
-    unknown,
-    ThrowOnError
-  >({
-    requestValidator: async (data) =>
-      await z
-        .object({
-          body: z.never().optional(),
-          path: zGetListingAvailabilityPath,
-          query: zGetListingAvailabilityQuery,
-        })
-        .parseAsync(data),
-    responseValidator: async (data) =>
-      await zGetListingAvailabilityResponse.parseAsync(data),
-    url: "/listings/{listingId}/availability",
-    ...options,
-  });
-
-/**
- * Discovery-only spots (parks, beaches, landmarks); not bookable
- */
-export const listScoutPins = <ThrowOnError extends boolean = false>(
-  options?: Options<ListScoutPinsData, ThrowOnError>,
-): RequestResult<ListScoutPinsResponses, unknown, ThrowOnError> =>
-  (options?.client ?? client).get<
-    ListScoutPinsResponses,
-    unknown,
-    ThrowOnError
-  >({
-    requestValidator: async (data) =>
-      await z
-        .object({
-          body: z.never().optional(),
-          path: z.never().optional(),
-          query: zListScoutPinsQuery.optional(),
-        })
-        .parseAsync(data),
-    responseValidator: async (data) =>
-      await zListScoutPinsResponse.parseAsync(data),
-    url: "/scout-pins",
-    ...options,
-  });
-
-export const listTalent = <ThrowOnError extends boolean = false>(
-  options?: Options<ListTalentData, ThrowOnError>,
-): RequestResult<ListTalentResponses, unknown, ThrowOnError> =>
-  (options?.client ?? client).get<ListTalentResponses, unknown, ThrowOnError>({
-    requestValidator: async (data) =>
-      await z
-        .object({
-          body: z.never().optional(),
-          path: z.never().optional(),
-          query: zListTalentQuery.optional(),
-        })
-        .parseAsync(data),
-    responseValidator: async (data) =>
-      await zListTalentResponse.parseAsync(data),
-    url: "/talent",
-    ...options,
-  });
-
-export const getTalent = <ThrowOnError extends boolean = false>(
-  options: Options<GetTalentData, ThrowOnError>,
-): RequestResult<GetTalentResponses, GetTalentErrors, ThrowOnError> =>
-  (options.client ?? client).get<
-    GetTalentResponses,
-    GetTalentErrors,
-    ThrowOnError
-  >({
-    requestValidator: async (data) =>
-      await z
-        .object({
-          body: z.never().optional(),
-          path: zGetTalentPath,
-          query: z.never().optional(),
-        })
-        .parseAsync(data),
-    responseValidator: async (data) =>
-      await zGetTalentResponse.parseAsync(data),
-    url: "/talent/{talentId}",
-    ...options,
-  });
-
-/**
- * Create or update my published creator listing (creator role)
- */
-export const upsertMyTalentProfile = <ThrowOnError extends boolean = false>(
-  options: Options<UpsertMyTalentProfileData, ThrowOnError>,
+export const postV1AuthEmail = <ThrowOnError extends boolean = false>(
+  options: Options<PostV1AuthEmailData, ThrowOnError>,
 ): RequestResult<
-  UpsertMyTalentProfileResponses,
-  UpsertMyTalentProfileErrors,
+  PostV1AuthEmailResponses,
+  PostV1AuthEmailErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    PostV1AuthEmailResponses,
+    PostV1AuthEmailErrors,
+    ThrowOnError
+  >({
+    requestValidator: async (data) =>
+      await z
+        .object({
+          body: zPostV1AuthEmailBody,
+          path: z.never().optional(),
+          query: z.never().optional(),
+        })
+        .parseAsync(data),
+    url: "/v1/auth/email",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Consume an email magic-link
+ */
+export const postV1AuthEmailConsume = <ThrowOnError extends boolean = false>(
+  options: Options<PostV1AuthEmailConsumeData, ThrowOnError>,
+): RequestResult<
+  PostV1AuthEmailConsumeResponses,
+  PostV1AuthEmailConsumeErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    PostV1AuthEmailConsumeResponses,
+    PostV1AuthEmailConsumeErrors,
+    ThrowOnError
+  >({
+    requestValidator: async (data) =>
+      await z
+        .object({
+          body: zPostV1AuthEmailConsumeBody,
+          path: z.never().optional(),
+          query: z.never().optional(),
+        })
+        .parseAsync(data),
+    url: "/v1/auth/email/consume",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Start Google, Facebook, Instagram, or X sign-in
+ */
+export const getV1AuthOauthByProvider = <ThrowOnError extends boolean = false>(
+  options: Options<GetV1AuthOauthByProviderData, ThrowOnError>,
+): RequestResult<
+  GetV1AuthOauthByProviderResponses,
+  GetV1AuthOauthByProviderErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).get<
+    GetV1AuthOauthByProviderResponses,
+    GetV1AuthOauthByProviderErrors,
+    ThrowOnError
+  >({
+    requestValidator: async (data) =>
+      await z
+        .object({
+          body: z.never().optional(),
+          path: zGetV1AuthOauthByProviderPath,
+          query: zGetV1AuthOauthByProviderQuery.optional(),
+        })
+        .parseAsync(data),
+    url: "/v1/auth/oauth/{provider}",
+    ...options,
+  });
+
+/**
+ * OAuth callback; sets cookie and redirects
+ */
+export const getV1AuthOauthByProviderCallback = <
+  ThrowOnError extends boolean = false,
+>(
+  options: Options<GetV1AuthOauthByProviderCallbackData, ThrowOnError>,
+): RequestResult<unknown, unknown, ThrowOnError> =>
+  (options.client ?? client).get<unknown, unknown, ThrowOnError>({
+    requestValidator: async (data) =>
+      await z
+        .object({
+          body: z.never().optional(),
+          path: zGetV1AuthOauthByProviderCallbackPath,
+          query: z.never().optional(),
+        })
+        .parseAsync(data),
+    url: "/v1/auth/oauth/{provider}/callback",
+    ...options,
+  });
+
+/**
+ * Current user (requires auth)
+ */
+export const getV1AuthSession = <ThrowOnError extends boolean = false>(
+  options?: Options<GetV1AuthSessionData, ThrowOnError>,
+): RequestResult<
+  GetV1AuthSessionResponses,
+  GetV1AuthSessionErrors,
+  ThrowOnError
+> =>
+  (options?.client ?? client).get<
+    GetV1AuthSessionResponses,
+    GetV1AuthSessionErrors,
+    ThrowOnError
+  >({
+    requestValidator: async (data) =>
+      await z
+        .object({
+          body: z.never().optional(),
+          path: z.never().optional(),
+          query: z.never().optional(),
+        })
+        .parseAsync(data),
+    security: [
+      {
+        in: "cookie",
+        name: "ams_session",
+        type: "apiKey",
+      },
+      { scheme: "bearer", type: "http" },
+    ],
+    url: "/v1/auth/session",
+    ...options,
+  });
+
+/**
+ * Account plus profile
+ *
+ * Session fields plus bio, neighborhood, and specialties. Used by `/account`.
+ */
+export const getV1UsersMe = <ThrowOnError extends boolean = false>(
+  options?: Options<GetV1UsersMeData, ThrowOnError>,
+): RequestResult<GetV1UsersMeResponses, GetV1UsersMeErrors, ThrowOnError> =>
+  (options?.client ?? client).get<
+    GetV1UsersMeResponses,
+    GetV1UsersMeErrors,
+    ThrowOnError
+  >({
+    requestValidator: async (data) =>
+      await z
+        .object({
+          body: z.never().optional(),
+          path: z.never().optional(),
+          query: z.never().optional(),
+        })
+        .parseAsync(data),
+    security: [
+      {
+        in: "cookie",
+        name: "ams_session",
+        type: "apiKey",
+      },
+      { scheme: "bearer", type: "http" },
+    ],
+    url: "/v1/users/me",
+    ...options,
+  });
+
+/**
+ * Update name, phone, or profile
+ *
+ * Re-issues `ams_session` so the cookie name and phone stay current.
+ */
+export const patchV1UsersMe = <ThrowOnError extends boolean = false>(
+  options: Options<PatchV1UsersMeData, ThrowOnError>,
+): RequestResult<PatchV1UsersMeResponses, PatchV1UsersMeErrors, ThrowOnError> =>
+  (options.client ?? client).patch<
+    PatchV1UsersMeResponses,
+    PatchV1UsersMeErrors,
+    ThrowOnError
+  >({
+    requestValidator: async (data) =>
+      await z
+        .object({
+          body: zPatchV1UsersMeBody,
+          path: z.never().optional(),
+          query: z.never().optional(),
+        })
+        .parseAsync(data),
+    security: [
+      {
+        in: "cookie",
+        name: "ams_session",
+        type: "apiKey",
+      },
+      { scheme: "bearer", type: "http" },
+    ],
+    url: "/v1/users/me",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Replace social accounts on the signed-in profile
+ */
+export const putV1UsersMeSocial = <ThrowOnError extends boolean = false>(
+  options: Options<PutV1UsersMeSocialData, ThrowOnError>,
+): RequestResult<
+  PutV1UsersMeSocialResponses,
+  PutV1UsersMeSocialErrors,
   ThrowOnError
 > =>
   (options.client ?? client).put<
-    UpsertMyTalentProfileResponses,
-    UpsertMyTalentProfileErrors,
+    PutV1UsersMeSocialResponses,
+    PutV1UsersMeSocialErrors,
     ThrowOnError
   >({
     requestValidator: async (data) =>
       await z
         .object({
-          body: zUpsertMyTalentProfileBody,
+          body: zPutV1UsersMeSocialBody,
           path: z.never().optional(),
           query: z.never().optional(),
         })
         .parseAsync(data),
-    responseValidator: async (data) =>
-      await zUpsertMyTalentProfileResponse.parseAsync(data),
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/me/talent",
+    security: [
+      {
+        in: "cookie",
+        name: "ams_session",
+        type: "apiKey",
+      },
+      { scheme: "bearer", type: "http" },
+    ],
+    url: "/v1/users/me/social",
     ...options,
     headers: {
       "Content-Type": "application/json",
@@ -778,11 +603,105 @@ export const upsertMyTalentProfile = <ThrowOnError extends boolean = false>(
     },
   });
 
-export const listCastingCalls = <ThrowOnError extends boolean = false>(
-  options?: Options<ListCastingCallsData, ThrowOnError>,
-): RequestResult<ListCastingCallsResponses, unknown, ThrowOnError> =>
+/**
+ * Public profile
+ */
+export const getV1UsersById = <ThrowOnError extends boolean = false>(
+  options: Options<GetV1UsersByIdData, ThrowOnError>,
+): RequestResult<GetV1UsersByIdResponses, GetV1UsersByIdErrors, ThrowOnError> =>
+  (options.client ?? client).get<
+    GetV1UsersByIdResponses,
+    GetV1UsersByIdErrors,
+    ThrowOnError
+  >({
+    requestValidator: async (data) =>
+      await z
+        .object({
+          body: z.never().optional(),
+          path: zGetV1UsersByIdPath,
+          query: z.never().optional(),
+        })
+        .parseAsync(data),
+    url: "/v1/users/{id}",
+    ...options,
+  });
+
+/**
+ * Latest public posts for the selected social platform
+ */
+export const getV1UsersByIdFeed = <ThrowOnError extends boolean = false>(
+  options: Options<GetV1UsersByIdFeedData, ThrowOnError>,
+): RequestResult<
+  GetV1UsersByIdFeedResponses,
+  GetV1UsersByIdFeedErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).get<
+    GetV1UsersByIdFeedResponses,
+    GetV1UsersByIdFeedErrors,
+    ThrowOnError
+  >({
+    requestValidator: async (data) =>
+      await z
+        .object({
+          body: z.never().optional(),
+          path: zGetV1UsersByIdFeedPath,
+          query: zGetV1UsersByIdFeedQuery.optional(),
+        })
+        .parseAsync(data),
+    url: "/v1/users/{id}/feed",
+    ...options,
+  });
+
+/**
+ * Add renter, owner, or talent
+ *
+ * Idempotent upsert. Cannot assign `admin`. Re-issues `ams_session` so Next middleware sees the new roles.
+ */
+export const postV1UsersMeRoles = <ThrowOnError extends boolean = false>(
+  options: Options<PostV1UsersMeRolesData, ThrowOnError>,
+): RequestResult<
+  PostV1UsersMeRolesResponses,
+  PostV1UsersMeRolesErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    PostV1UsersMeRolesResponses,
+    PostV1UsersMeRolesErrors,
+    ThrowOnError
+  >({
+    requestValidator: async (data) =>
+      await z
+        .object({
+          body: zPostV1UsersMeRolesBody,
+          path: z.never().optional(),
+          query: z.never().optional(),
+        })
+        .parseAsync(data),
+    security: [
+      {
+        in: "cookie",
+        name: "ams_session",
+        type: "apiKey",
+      },
+      { scheme: "bearer", type: "http" },
+    ],
+    url: "/v1/users/me/roles",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Live gazetteer (starting in Nigeria): states and metro fences
+ */
+export const getV1CatalogPlaces = <ThrowOnError extends boolean = false>(
+  options?: Options<GetV1CatalogPlacesData, ThrowOnError>,
+): RequestResult<GetV1CatalogPlacesResponses, unknown, ThrowOnError> =>
   (options?.client ?? client).get<
-    ListCastingCallsResponses,
+    GetV1CatalogPlacesResponses,
     unknown,
     ThrowOnError
   >({
@@ -791,207 +710,95 @@ export const listCastingCalls = <ThrowOnError extends boolean = false>(
         .object({
           body: z.never().optional(),
           path: z.never().optional(),
-          query: zListCastingCallsQuery.optional(),
-        })
-        .parseAsync(data),
-    responseValidator: async (data) =>
-      await zListCastingCallsResponse.parseAsync(data),
-    url: "/casting-calls",
-    ...options,
-  });
-
-export const createCastingCall = <ThrowOnError extends boolean = false>(
-  options: Options<CreateCastingCallData, ThrowOnError>,
-): RequestResult<
-  CreateCastingCallResponses,
-  CreateCastingCallErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).post<
-    CreateCastingCallResponses,
-    CreateCastingCallErrors,
-    ThrowOnError
-  >({
-    requestValidator: async (data) =>
-      await z
-        .object({
-          body: zCreateCastingCallBody,
-          path: z.never().optional(),
           query: z.never().optional(),
         })
         .parseAsync(data),
-    responseValidator: async (data) =>
-      await zCreateCastingCallResponse.parseAsync(data),
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/casting-calls",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
-
-export const getCastingCall = <ThrowOnError extends boolean = false>(
-  options: Options<GetCastingCallData, ThrowOnError>,
-): RequestResult<GetCastingCallResponses, GetCastingCallErrors, ThrowOnError> =>
-  (options.client ?? client).get<
-    GetCastingCallResponses,
-    GetCastingCallErrors,
-    ThrowOnError
-  >({
-    requestValidator: async (data) =>
-      await z
-        .object({
-          body: z.never().optional(),
-          path: zGetCastingCallPath,
-          query: z.never().optional(),
-        })
-        .parseAsync(data),
-    responseValidator: async (data) =>
-      await zGetCastingCallResponse.parseAsync(data),
-    url: "/casting-calls/{callId}",
-    ...options,
-  });
-
-export const expressInterest = <ThrowOnError extends boolean = false>(
-  options: Options<ExpressInterestData, ThrowOnError>,
-): RequestResult<
-  ExpressInterestResponses,
-  ExpressInterestErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).post<
-    ExpressInterestResponses,
-    ExpressInterestErrors,
-    ThrowOnError
-  >({
-    requestValidator: async (data) =>
-      await z
-        .object({
-          body: zExpressInterestBody,
-          path: zExpressInterestPath,
-          query: z.never().optional(),
-        })
-        .parseAsync(data),
-    responseValidator: async (data) =>
-      await zExpressInterestResponse.parseAsync(data),
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/casting-calls/{callId}/interest",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
-
-/**
- * Bookings I requested (as renter) or received (as owner or creator)
- */
-export const listBookings = <ThrowOnError extends boolean = false>(
-  options?: Options<ListBookingsData, ThrowOnError>,
-): RequestResult<ListBookingsResponses, unknown, ThrowOnError> =>
-  (options?.client ?? client).get<ListBookingsResponses, unknown, ThrowOnError>(
-    {
-      requestValidator: async (data) =>
-        await z
-          .object({
-            body: z.never().optional(),
-            path: z.never().optional(),
-            query: zListBookingsQuery.optional(),
-          })
-          .parseAsync(data),
-      responseValidator: async (data) =>
-        await zListBookingsResponse.parseAsync(data),
-      security: [{ scheme: "bearer", type: "http" }],
-      url: "/bookings",
-      ...options,
-    },
-  );
-
-/**
- * Request a booking (location), rental (gear) or hire (talent)
- */
-export const createBooking = <ThrowOnError extends boolean = false>(
-  options: Options<CreateBookingData, ThrowOnError>,
-): RequestResult<CreateBookingResponses, CreateBookingErrors, ThrowOnError> =>
-  (options.client ?? client).post<
-    CreateBookingResponses,
-    CreateBookingErrors,
-    ThrowOnError
-  >({
-    requestValidator: async (data) =>
-      await z
-        .object({
-          body: zCreateBookingBody,
-          path: z.never().optional(),
-          query: z.never().optional(),
-        })
-        .parseAsync(data),
-    responseValidator: async (data) =>
-      await zCreateBookingResponse.parseAsync(data),
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/bookings",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
-
-export const getBooking = <ThrowOnError extends boolean = false>(
-  options: Options<GetBookingData, ThrowOnError>,
-): RequestResult<GetBookingResponses, GetBookingErrors, ThrowOnError> =>
-  (options.client ?? client).get<
-    GetBookingResponses,
-    GetBookingErrors,
-    ThrowOnError
-  >({
-    requestValidator: async (data) =>
-      await z
-        .object({
-          body: z.never().optional(),
-          path: zGetBookingPath,
-          query: z.never().optional(),
-        })
-        .parseAsync(data),
-    responseValidator: async (data) =>
-      await zGetBookingResponse.parseAsync(data),
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/bookings/{bookingId}",
+    url: "/v1/catalog/places",
     ...options,
   });
 
 /**
- * Move a booking through its lifecycle
+ * Home feed
  *
- * Provider: accept, decline, confirm_payment, complete.
- * Requester: cancel (before completion).
- *
+ * Optional state / metro spatial context.
  */
-export const transitionBooking = <ThrowOnError extends boolean = false>(
-  options: Options<TransitionBookingData, ThrowOnError>,
+export const getV1CatalogHome = <ThrowOnError extends boolean = false>(
+  options?: Options<GetV1CatalogHomeData, ThrowOnError>,
+): RequestResult<GetV1CatalogHomeResponses, unknown, ThrowOnError> =>
+  (options?.client ?? client).get<
+    GetV1CatalogHomeResponses,
+    unknown,
+    ThrowOnError
+  >({
+    requestValidator: async (data) =>
+      await z
+        .object({
+          body: z.never().optional(),
+          path: z.never().optional(),
+          query: zGetV1CatalogHomeQuery.optional(),
+        })
+        .parseAsync(data),
+    url: "/v1/catalog/home",
+    ...options,
+  });
+
+/**
+ * Search published locations and pins
+ */
+export const getV1Locations = <ThrowOnError extends boolean = false>(
+  options?: Options<GetV1LocationsData, ThrowOnError>,
+): RequestResult<GetV1LocationsResponses, unknown, ThrowOnError> =>
+  (options?.client ?? client).get<
+    GetV1LocationsResponses,
+    unknown,
+    ThrowOnError
+  >({
+    requestValidator: async (data) =>
+      await z
+        .object({
+          body: z.never().optional(),
+          path: z.never().optional(),
+          query: zGetV1LocationsQuery.optional(),
+        })
+        .parseAsync(data),
+    url: "/v1/locations",
+    ...options,
+  });
+
+/**
+ * Create a location listing
+ *
+ * Requires owner or admin. Status is `pending` unless the caller is admin.
+ */
+export const postV1Locations = <ThrowOnError extends boolean = false>(
+  options: Options<PostV1LocationsData, ThrowOnError>,
 ): RequestResult<
-  TransitionBookingResponses,
-  TransitionBookingErrors,
+  PostV1LocationsResponses,
+  PostV1LocationsErrors,
   ThrowOnError
 > =>
   (options.client ?? client).post<
-    TransitionBookingResponses,
-    TransitionBookingErrors,
+    PostV1LocationsResponses,
+    PostV1LocationsErrors,
     ThrowOnError
   >({
     requestValidator: async (data) =>
       await z
         .object({
-          body: zTransitionBookingBody,
-          path: zTransitionBookingPath,
+          body: zPostV1LocationsBody,
+          path: z.never().optional(),
           query: z.never().optional(),
         })
         .parseAsync(data),
-    responseValidator: async (data) =>
-      await zTransitionBookingResponse.parseAsync(data),
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/bookings/{bookingId}/transition",
+    security: [
+      {
+        in: "cookie",
+        name: "ams_session",
+        type: "apiKey",
+      },
+      { scheme: "bearer", type: "http" },
+    ],
+    url: "/v1/locations",
     ...options,
     headers: {
       "Content-Type": "application/json",
@@ -999,90 +806,156 @@ export const transitionBooking = <ThrowOnError extends boolean = false>(
     },
   });
 
-export const listBookingMessages = <ThrowOnError extends boolean = false>(
-  options: Options<ListBookingMessagesData, ThrowOnError>,
-): RequestResult<ListBookingMessagesResponses, unknown, ThrowOnError> =>
+/**
+ * Search published rental gear
+ */
+export const getV1Gear = <ThrowOnError extends boolean = false>(
+  options?: Options<GetV1GearData, ThrowOnError>,
+): RequestResult<GetV1GearResponses, unknown, ThrowOnError> =>
+  (options?.client ?? client).get<GetV1GearResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) =>
+      await z
+        .object({
+          body: z.never().optional(),
+          path: z.never().optional(),
+          query: zGetV1GearQuery.optional(),
+        })
+        .parseAsync(data),
+    url: "/v1/gear",
+    ...options,
+  });
+
+/**
+ * Create a rental gear listing
+ *
+ * Requires owner or admin. Day-rate kit only. `serialNumber` and `accessories` are stored.
+ */
+export const postV1Gear = <ThrowOnError extends boolean = false>(
+  options: Options<PostV1GearData, ThrowOnError>,
+): RequestResult<PostV1GearResponses, PostV1GearErrors, ThrowOnError> =>
+  (options.client ?? client).post<
+    PostV1GearResponses,
+    PostV1GearErrors,
+    ThrowOnError
+  >({
+    requestValidator: async (data) =>
+      await z
+        .object({
+          body: zPostV1GearBody,
+          path: z.never().optional(),
+          query: z.never().optional(),
+        })
+        .parseAsync(data),
+    security: [
+      {
+        in: "cookie",
+        name: "ams_session",
+        type: "apiKey",
+      },
+      { scheme: "bearer", type: "http" },
+    ],
+    url: "/v1/gear",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Search gear for sale
+ */
+export const getV1GearSale = <ThrowOnError extends boolean = false>(
+  options?: Options<GetV1GearSaleData, ThrowOnError>,
+): RequestResult<GetV1GearSaleResponses, unknown, ThrowOnError> =>
+  (options?.client ?? client).get<
+    GetV1GearSaleResponses,
+    unknown,
+    ThrowOnError
+  >({
+    requestValidator: async (data) =>
+      await z
+        .object({
+          body: z.never().optional(),
+          path: z.never().optional(),
+          query: zGetV1GearSaleQuery.optional(),
+        })
+        .parseAsync(data),
+    url: "/v1/gear/sale",
+    ...options,
+  });
+
+/**
+ * Create a gear-for-sale listing
+ *
+ * Separate from rental. Purchase workflow is not live. Requires owner or admin.
+ */
+export const postV1GearSale = <ThrowOnError extends boolean = false>(
+  options: Options<PostV1GearSaleData, ThrowOnError>,
+): RequestResult<PostV1GearSaleResponses, PostV1GearSaleErrors, ThrowOnError> =>
+  (options.client ?? client).post<
+    PostV1GearSaleResponses,
+    PostV1GearSaleErrors,
+    ThrowOnError
+  >({
+    requestValidator: async (data) =>
+      await z
+        .object({
+          body: zPostV1GearSaleBody,
+          path: z.never().optional(),
+          query: z.never().optional(),
+        })
+        .parseAsync(data),
+    security: [
+      {
+        in: "cookie",
+        name: "ams_session",
+        type: "apiKey",
+      },
+      { scheme: "bearer", type: "http" },
+    ],
+    url: "/v1/gear/sale",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Listing detail
+ */
+export const getV1ListingsById = <ThrowOnError extends boolean = false>(
+  options: Options<GetV1ListingsByIdData, ThrowOnError>,
+): RequestResult<
+  GetV1ListingsByIdResponses,
+  GetV1ListingsByIdErrors,
+  ThrowOnError
+> =>
   (options.client ?? client).get<
-    ListBookingMessagesResponses,
-    unknown,
+    GetV1ListingsByIdResponses,
+    GetV1ListingsByIdErrors,
     ThrowOnError
   >({
     requestValidator: async (data) =>
       await z
         .object({
           body: z.never().optional(),
-          path: zListBookingMessagesPath,
+          path: zGetV1ListingsByIdPath,
           query: z.never().optional(),
         })
         .parseAsync(data),
-    responseValidator: async (data) =>
-      await zListBookingMessagesResponse.parseAsync(data),
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/bookings/{bookingId}/messages",
+    url: "/v1/listings/{id}",
     ...options,
-  });
-
-export const sendBookingMessage = <ThrowOnError extends boolean = false>(
-  options: Options<SendBookingMessageData, ThrowOnError>,
-): RequestResult<SendBookingMessageResponses, unknown, ThrowOnError> =>
-  (options.client ?? client).post<
-    SendBookingMessageResponses,
-    unknown,
-    ThrowOnError
-  >({
-    requestValidator: async (data) =>
-      await z
-        .object({
-          body: zSendBookingMessageBody,
-          path: zSendBookingMessagePath,
-          query: z.never().optional(),
-        })
-        .parseAsync(data),
-    responseValidator: async (data) =>
-      await zSendBookingMessageResponse.parseAsync(data),
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/bookings/{bookingId}/messages",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
   });
 
 /**
- * Record gear pickup or return (gear rentals only)
+ * Talent board and open calls
  */
-export const recordHandoff = <ThrowOnError extends boolean = false>(
-  options: Options<RecordHandoffData, ThrowOnError>,
-): RequestResult<RecordHandoffResponses, unknown, ThrowOnError> =>
-  (options.client ?? client).post<
-    RecordHandoffResponses,
-    unknown,
-    ThrowOnError
-  >({
-    requestValidator: async (data) =>
-      await z
-        .object({
-          body: zRecordHandoffBody,
-          path: zRecordHandoffPath,
-          query: z.never().optional(),
-        })
-        .parseAsync(data),
-    responseValidator: async (data) =>
-      await zRecordHandoffResponse.parseAsync(data),
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/bookings/{bookingId}/handoffs",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
-
-export const listPlans = <ThrowOnError extends boolean = false>(
-  options?: Options<ListPlansData, ThrowOnError>,
-): RequestResult<ListPlansResponses, unknown, ThrowOnError> =>
-  (options?.client ?? client).get<ListPlansResponses, unknown, ThrowOnError>({
+export const getV1Cast = <ThrowOnError extends boolean = false>(
+  options?: Options<GetV1CastData, ThrowOnError>,
+): RequestResult<GetV1CastResponses, unknown, ThrowOnError> =>
+  (options?.client ?? client).get<GetV1CastResponses, unknown, ThrowOnError>({
     requestValidator: async (data) =>
       await z
         .object({
@@ -1091,36 +964,71 @@ export const listPlans = <ThrowOnError extends boolean = false>(
           query: z.never().optional(),
         })
         .parseAsync(data),
-    responseValidator: async (data) =>
-      await zListPlansResponse.parseAsync(data),
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/planner/plans",
+    url: "/v1/cast",
     ...options,
   });
 
 /**
- * Turn a creative brief into a production plan
+ * Talent listing with owner profile
  */
-export const createPlan = <ThrowOnError extends boolean = false>(
-  options: Options<CreatePlanData, ThrowOnError>,
-): RequestResult<CreatePlanResponses, CreatePlanErrors, ThrowOnError> =>
-  (options.client ?? client).post<
-    CreatePlanResponses,
-    CreatePlanErrors,
+export const getV1CastTalentById = <ThrowOnError extends boolean = false>(
+  options: Options<GetV1CastTalentByIdData, ThrowOnError>,
+): RequestResult<
+  GetV1CastTalentByIdResponses,
+  GetV1CastTalentByIdErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).get<
+    GetV1CastTalentByIdResponses,
+    GetV1CastTalentByIdErrors,
     ThrowOnError
   >({
     requestValidator: async (data) =>
       await z
         .object({
-          body: zCreatePlanBody,
+          body: z.never().optional(),
+          path: zGetV1CastTalentByIdPath,
+          query: z.never().optional(),
+        })
+        .parseAsync(data),
+    url: "/v1/cast/talent/{id}",
+    ...options,
+  });
+
+/**
+ * Create a talent listing
+ *
+ * Requires talent or admin.
+ */
+export const postV1CastTalent = <ThrowOnError extends boolean = false>(
+  options: Options<PostV1CastTalentData, ThrowOnError>,
+): RequestResult<
+  PostV1CastTalentResponses,
+  PostV1CastTalentErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    PostV1CastTalentResponses,
+    PostV1CastTalentErrors,
+    ThrowOnError
+  >({
+    requestValidator: async (data) =>
+      await z
+        .object({
+          body: zPostV1CastTalentBody,
           path: z.never().optional(),
           query: z.never().optional(),
         })
         .parseAsync(data),
-    responseValidator: async (data) =>
-      await zCreatePlanResponse.parseAsync(data),
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/planner/plans",
+    security: [
+      {
+        in: "cookie",
+        name: "ams_session",
+        type: "apiKey",
+      },
+      { scheme: "bearer", type: "http" },
+    ],
+    url: "/v1/cast/talent",
     ...options,
     headers: {
       "Content-Type": "application/json",
@@ -1128,43 +1036,611 @@ export const createPlan = <ThrowOnError extends boolean = false>(
     },
   });
 
-export const getPlan = <ThrowOnError extends boolean = false>(
-  options: Options<GetPlanData, ThrowOnError>,
-): RequestResult<GetPlanResponses, GetPlanErrors, ThrowOnError> =>
-  (options.client ?? client).get<GetPlanResponses, GetPlanErrors, ThrowOnError>(
-    {
-      requestValidator: async (data) =>
-        await z
-          .object({
-            body: z.never().optional(),
-            path: zGetPlanPath,
-            query: z.never().optional(),
-          })
-          .parseAsync(data),
-      responseValidator: async (data) =>
-        await zGetPlanResponse.parseAsync(data),
-      security: [{ scheme: "bearer", type: "http" }],
-      url: "/planner/plans/{planId}",
-      ...options,
-    },
-  );
-
 /**
- * Footer "Report an issue"
+ * All casting calls
  */
-export const reportIssue = <ThrowOnError extends boolean = false>(
-  options: Options<ReportIssueData, ThrowOnError>,
-): RequestResult<ReportIssueResponses, unknown, ThrowOnError> =>
-  (options.client ?? client).post<ReportIssueResponses, unknown, ThrowOnError>({
+export const getV1CastCalls = <ThrowOnError extends boolean = false>(
+  options?: Options<GetV1CastCallsData, ThrowOnError>,
+): RequestResult<GetV1CastCallsResponses, unknown, ThrowOnError> =>
+  (options?.client ?? client).get<
+    GetV1CastCallsResponses,
+    unknown,
+    ThrowOnError
+  >({
     requestValidator: async (data) =>
       await z
         .object({
-          body: zReportIssueBody,
+          body: z.never().optional(),
           path: z.never().optional(),
           query: z.never().optional(),
         })
         .parseAsync(data),
-    url: "/reports",
+    url: "/v1/cast/calls",
+    ...options,
+  });
+
+/**
+ * Post a casting call
+ */
+export const postV1CastCalls = <ThrowOnError extends boolean = false>(
+  options: Options<PostV1CastCallsData, ThrowOnError>,
+): RequestResult<
+  PostV1CastCallsResponses,
+  PostV1CastCallsErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    PostV1CastCallsResponses,
+    PostV1CastCallsErrors,
+    ThrowOnError
+  >({
+    requestValidator: async (data) =>
+      await z
+        .object({
+          body: zPostV1CastCallsBody,
+          path: z.never().optional(),
+          query: z.never().optional(),
+        })
+        .parseAsync(data),
+    security: [
+      {
+        in: "cookie",
+        name: "ams_session",
+        type: "apiKey",
+      },
+      { scheme: "bearer", type: "http" },
+    ],
+    url: "/v1/cast/calls",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Apply to a call
+ *
+ * Requires talent or admin. 404 if the call is missing. Upserts on (callId, talentId).
+ */
+export const postV1CastCallsByIdApply = <ThrowOnError extends boolean = false>(
+  options: Options<PostV1CastCallsByIdApplyData, ThrowOnError>,
+): RequestResult<
+  PostV1CastCallsByIdApplyResponses,
+  PostV1CastCallsByIdApplyErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    PostV1CastCallsByIdApplyResponses,
+    PostV1CastCallsByIdApplyErrors,
+    ThrowOnError
+  >({
+    requestValidator: async (data) =>
+      await z
+        .object({
+          body: zPostV1CastCallsByIdApplyBody,
+          path: zPostV1CastCallsByIdApplyPath,
+          query: z.never().optional(),
+        })
+        .parseAsync(data),
+    security: [
+      {
+        in: "cookie",
+        name: "ams_session",
+        type: "apiKey",
+      },
+      { scheme: "bearer", type: "http" },
+    ],
+    url: "/v1/cast/calls/{id}/apply",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Bookings for the signed-in user
+ */
+export const getV1Bookings = <ThrowOnError extends boolean = false>(
+  options?: Options<GetV1BookingsData, ThrowOnError>,
+): RequestResult<GetV1BookingsResponses, GetV1BookingsErrors, ThrowOnError> =>
+  (options?.client ?? client).get<
+    GetV1BookingsResponses,
+    GetV1BookingsErrors,
+    ThrowOnError
+  >({
+    requestValidator: async (data) =>
+      await z
+        .object({
+          body: z.never().optional(),
+          path: z.never().optional(),
+          query: z.never().optional(),
+        })
+        .parseAsync(data),
+    security: [
+      {
+        in: "cookie",
+        name: "ams_session",
+        type: "apiKey",
+      },
+      { scheme: "bearer", type: "http" },
+    ],
+    url: "/v1/bookings",
+    ...options,
+  });
+
+/**
+ * Request a booking
+ *
+ * Published location, gear, or talent listings. gear_sale cannot be booked. Talent hire is the same request desk, not licensed escrow. Overlapping active dates are rejected.
+ */
+export const postV1Bookings = <ThrowOnError extends boolean = false>(
+  options: Options<PostV1BookingsData, ThrowOnError>,
+): RequestResult<PostV1BookingsResponses, PostV1BookingsErrors, ThrowOnError> =>
+  (options.client ?? client).post<
+    PostV1BookingsResponses,
+    PostV1BookingsErrors,
+    ThrowOnError
+  >({
+    requestValidator: async (data) =>
+      await z
+        .object({
+          body: zPostV1BookingsBody,
+          path: z.never().optional(),
+          query: z.never().optional(),
+        })
+        .parseAsync(data),
+    security: [
+      {
+        in: "cookie",
+        name: "ams_session",
+        type: "apiKey",
+      },
+      { scheme: "bearer", type: "http" },
+    ],
+    url: "/v1/bookings",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Booking thread
+ */
+export const getV1BookingsById = <ThrowOnError extends boolean = false>(
+  options: Options<GetV1BookingsByIdData, ThrowOnError>,
+): RequestResult<
+  GetV1BookingsByIdResponses,
+  GetV1BookingsByIdErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).get<
+    GetV1BookingsByIdResponses,
+    GetV1BookingsByIdErrors,
+    ThrowOnError
+  >({
+    requestValidator: async (data) =>
+      await z
+        .object({
+          body: z.never().optional(),
+          path: zGetV1BookingsByIdPath,
+          query: z.never().optional(),
+        })
+        .parseAsync(data),
+    security: [
+      {
+        in: "cookie",
+        name: "ams_session",
+        type: "apiKey",
+      },
+      { scheme: "bearer", type: "http" },
+    ],
+    url: "/v1/bookings/{id}",
+    ...options,
+  });
+
+/**
+ * Owner accepts (awaiting_funds)
+ */
+export const postV1BookingsByIdAccept = <ThrowOnError extends boolean = false>(
+  options: Options<PostV1BookingsByIdAcceptData, ThrowOnError>,
+): RequestResult<
+  PostV1BookingsByIdAcceptResponses,
+  PostV1BookingsByIdAcceptErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    PostV1BookingsByIdAcceptResponses,
+    PostV1BookingsByIdAcceptErrors,
+    ThrowOnError
+  >({
+    requestValidator: async (data) =>
+      await z
+        .object({
+          body: z.never().optional(),
+          path: zPostV1BookingsByIdAcceptPath,
+          query: z.never().optional(),
+        })
+        .parseAsync(data),
+    security: [
+      {
+        in: "cookie",
+        name: "ams_session",
+        type: "apiKey",
+      },
+      { scheme: "bearer", type: "http" },
+    ],
+    url: "/v1/bookings/{id}/accept",
+    ...options,
+  });
+
+/**
+ * Owner declines
+ */
+export const postV1BookingsByIdDecline = <ThrowOnError extends boolean = false>(
+  options: Options<PostV1BookingsByIdDeclineData, ThrowOnError>,
+): RequestResult<
+  PostV1BookingsByIdDeclineResponses,
+  PostV1BookingsByIdDeclineErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    PostV1BookingsByIdDeclineResponses,
+    PostV1BookingsByIdDeclineErrors,
+    ThrowOnError
+  >({
+    requestValidator: async (data) =>
+      await z
+        .object({
+          body: z.never().optional(),
+          path: zPostV1BookingsByIdDeclinePath,
+          query: z.never().optional(),
+        })
+        .parseAsync(data),
+    security: [
+      {
+        in: "cookie",
+        name: "ams_session",
+        type: "apiKey",
+      },
+      { scheme: "bearer", type: "http" },
+    ],
+    url: "/v1/bookings/{id}/decline",
+    ...options,
+  });
+
+/**
+ * Owner or admin marks paid
+ *
+ * Updates booking to confirmed and writes an escrow.manual ledger line in one transaction. Paystack is a stub.
+ */
+export const postV1BookingsByIdMarkPaid = <
+  ThrowOnError extends boolean = false,
+>(
+  options: Options<PostV1BookingsByIdMarkPaidData, ThrowOnError>,
+): RequestResult<
+  PostV1BookingsByIdMarkPaidResponses,
+  PostV1BookingsByIdMarkPaidErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    PostV1BookingsByIdMarkPaidResponses,
+    PostV1BookingsByIdMarkPaidErrors,
+    ThrowOnError
+  >({
+    requestValidator: async (data) =>
+      await z
+        .object({
+          body: z.never().optional(),
+          path: zPostV1BookingsByIdMarkPaidPath,
+          query: z.never().optional(),
+        })
+        .parseAsync(data),
+    security: [
+      {
+        in: "cookie",
+        name: "ams_session",
+        type: "apiKey",
+      },
+      { scheme: "bearer", type: "http" },
+    ],
+    url: "/v1/bookings/{id}/mark-paid",
+    ...options,
+  });
+
+/**
+ * Add a thread message
+ */
+export const postV1BookingsByIdMessages = <
+  ThrowOnError extends boolean = false,
+>(
+  options: Options<PostV1BookingsByIdMessagesData, ThrowOnError>,
+): RequestResult<
+  PostV1BookingsByIdMessagesResponses,
+  PostV1BookingsByIdMessagesErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    PostV1BookingsByIdMessagesResponses,
+    PostV1BookingsByIdMessagesErrors,
+    ThrowOnError
+  >({
+    requestValidator: async (data) =>
+      await z
+        .object({
+          body: zPostV1BookingsByIdMessagesBody,
+          path: zPostV1BookingsByIdMessagesPath,
+          query: z.never().optional(),
+        })
+        .parseAsync(data),
+    security: [
+      {
+        in: "cookie",
+        name: "ams_session",
+        type: "apiKey",
+      },
+      { scheme: "bearer", type: "http" },
+    ],
+    url: "/v1/bookings/{id}/messages",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * File a handoff report
+ *
+ * Optional image, max 8MB. Gear listings move to `handoff_out` or `closed`.
+ */
+export const postV1BookingsByIdHandoff = <ThrowOnError extends boolean = false>(
+  options: Options<PostV1BookingsByIdHandoffData, ThrowOnError>,
+): RequestResult<
+  PostV1BookingsByIdHandoffResponses,
+  PostV1BookingsByIdHandoffErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    PostV1BookingsByIdHandoffResponses,
+    PostV1BookingsByIdHandoffErrors,
+    ThrowOnError
+  >({
+    ...formDataBodySerializer,
+    requestValidator: async (data) =>
+      await z
+        .object({
+          body: zPostV1BookingsByIdHandoffBody,
+          path: zPostV1BookingsByIdHandoffPath,
+          query: z.never().optional(),
+        })
+        .parseAsync(data),
+    security: [
+      {
+        in: "cookie",
+        name: "ams_session",
+        type: "apiKey",
+      },
+      { scheme: "bearer", type: "http" },
+    ],
+    url: "/v1/bookings/{id}/handoff",
+    ...options,
+    headers: {
+      "Content-Type": null,
+      ...options.headers,
+    },
+  });
+
+/**
+ * Create a professional plan plus catalog rentals
+ */
+export const postV1Planner = <ThrowOnError extends boolean = false>(
+  options: Options<PostV1PlannerData, ThrowOnError>,
+): RequestResult<PostV1PlannerResponses, PostV1PlannerErrors, ThrowOnError> =>
+  (options.client ?? client).post<
+    PostV1PlannerResponses,
+    PostV1PlannerErrors,
+    ThrowOnError
+  >({
+    requestValidator: async (data) =>
+      await z
+        .object({
+          body: zPostV1PlannerBody,
+          path: z.never().optional(),
+          query: z.never().optional(),
+        })
+        .parseAsync(data),
+    security: [
+      {
+        in: "cookie",
+        name: "ams_session",
+        type: "apiKey",
+      },
+      { scheme: "bearer", type: "http" },
+    ],
+    url: "/v1/planner",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Load a saved plan
+ *
+ * Owner or admin only.
+ */
+export const getV1PlannerConversationsById = <
+  ThrowOnError extends boolean = false,
+>(
+  options: Options<GetV1PlannerConversationsByIdData, ThrowOnError>,
+): RequestResult<
+  GetV1PlannerConversationsByIdResponses,
+  GetV1PlannerConversationsByIdErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).get<
+    GetV1PlannerConversationsByIdResponses,
+    GetV1PlannerConversationsByIdErrors,
+    ThrowOnError
+  >({
+    requestValidator: async (data) =>
+      await z
+        .object({
+          body: z.never().optional(),
+          path: zGetV1PlannerConversationsByIdPath,
+          query: z.never().optional(),
+        })
+        .parseAsync(data),
+    security: [
+      {
+        in: "cookie",
+        name: "ams_session",
+        type: "apiKey",
+      },
+      { scheme: "bearer", type: "http" },
+    ],
+    url: "/v1/planner/conversations/{id}",
+    ...options,
+  });
+
+/**
+ * Ops snapshot
+ */
+export const getV1AdminOps = <ThrowOnError extends boolean = false>(
+  options?: Options<GetV1AdminOpsData, ThrowOnError>,
+): RequestResult<GetV1AdminOpsResponses, GetV1AdminOpsErrors, ThrowOnError> =>
+  (options?.client ?? client).get<
+    GetV1AdminOpsResponses,
+    GetV1AdminOpsErrors,
+    ThrowOnError
+  >({
+    requestValidator: async (data) =>
+      await z
+        .object({
+          body: z.never().optional(),
+          path: z.never().optional(),
+          query: z.never().optional(),
+        })
+        .parseAsync(data),
+    security: [
+      {
+        in: "cookie",
+        name: "ams_session",
+        type: "apiKey",
+      },
+      { scheme: "bearer", type: "http" },
+    ],
+    url: "/v1/admin/ops",
+    ...options,
+  });
+
+/**
+ * Publish or reject a listing
+ */
+export const postV1AdminListingsByIdReview = <
+  ThrowOnError extends boolean = false,
+>(
+  options: Options<PostV1AdminListingsByIdReviewData, ThrowOnError>,
+): RequestResult<
+  PostV1AdminListingsByIdReviewResponses,
+  PostV1AdminListingsByIdReviewErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    PostV1AdminListingsByIdReviewResponses,
+    PostV1AdminListingsByIdReviewErrors,
+    ThrowOnError
+  >({
+    requestValidator: async (data) =>
+      await z
+        .object({
+          body: zPostV1AdminListingsByIdReviewBody,
+          path: zPostV1AdminListingsByIdReviewPath,
+          query: z.never().optional(),
+        })
+        .parseAsync(data),
+    security: [
+      {
+        in: "cookie",
+        name: "ams_session",
+        type: "apiKey",
+      },
+      { scheme: "bearer", type: "http" },
+    ],
+    url: "/v1/admin/listings/{id}/review",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Create an unlisted public pin
+ */
+export const postV1AdminPins = <ThrowOnError extends boolean = false>(
+  options: Options<PostV1AdminPinsData, ThrowOnError>,
+): RequestResult<
+  PostV1AdminPinsResponses,
+  PostV1AdminPinsErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    PostV1AdminPinsResponses,
+    PostV1AdminPinsErrors,
+    ThrowOnError
+  >({
+    requestValidator: async (data) =>
+      await z
+        .object({
+          body: zPostV1AdminPinsBody,
+          path: z.never().optional(),
+          query: z.never().optional(),
+        })
+        .parseAsync(data),
+    security: [
+      {
+        in: "cookie",
+        name: "ams_session",
+        type: "apiKey",
+      },
+      { scheme: "bearer", type: "http" },
+    ],
+    url: "/v1/admin/pins",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Log feedback
+ *
+ * Does not write to Postgres. Auth is optional.
+ */
+export const postV1Issues = <ThrowOnError extends boolean = false>(
+  options: Options<PostV1IssuesData, ThrowOnError>,
+): RequestResult<PostV1IssuesResponses, PostV1IssuesErrors, ThrowOnError> =>
+  (options.client ?? client).post<
+    PostV1IssuesResponses,
+    PostV1IssuesErrors,
+    ThrowOnError
+  >({
+    requestValidator: async (data) =>
+      await z
+        .object({
+          body: zPostV1IssuesBody,
+          path: z.never().optional(),
+          query: z.never().optional(),
+        })
+        .parseAsync(data),
+    url: "/v1/issues",
     ...options,
     headers: {
       "Content-Type": "application/json",

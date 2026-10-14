@@ -12,21 +12,19 @@ import { requestBookingAction, type BookingFormState } from "@/lib/bookings/acti
 import { formatNgn } from "@/lib/format";
 import { bookingDays } from "@/lib/validators/booking";
 
-export type RequestTarget = { listingId: string } | { talentId: string };
-
 /**
  * Sticky price card with the date request form. Signed-out visitors get the
  * "Sign in to request booking" dialog instead of submitting (Figma: Location Detail 2).
  */
 export function RequestCard({
-  target,
+  listingId,
   dayRateNgn,
   verb,
   noteLabel,
   signedIn,
   disclaimer,
 }: {
-  target: RequestTarget;
+  listingId: string;
   dayRateNgn: number;
   verb: string;
   noteLabel: string;
@@ -37,7 +35,7 @@ export function RequestCard({
   const [gateOpen, setGateOpen] = useState(false);
   const [dates, setDates] = useState({ start: "", end: "" });
   const [state, action, pending] = useActionState<BookingFormState, FormData>(
-    requestBookingAction.bind(null, target),
+    requestBookingAction.bind(null, listingId),
     {},
   );
 
@@ -50,10 +48,10 @@ export function RequestCard({
       <Card className="flex flex-col gap-3 p-6">
         <p className="font-heading text-xl font-semibold">Request sent</p>
         <p className="text-sm text-muted-foreground">
-          The owner will confirm dates and payment. Track it in your bookings.
+          The owner confirms dates and payment. Track it in your bookings.
         </p>
-        <ButtonLink href="/bookings" variant="outline">
-          Go to bookings
+        <ButtonLink href={state.bookingId ? `/bookings/${state.bookingId}` : "/bookings"} variant="outline">
+          View booking
         </ButtonLink>
       </Card>
     );
