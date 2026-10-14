@@ -1,8 +1,6 @@
-import { env } from "@/lib/env";
-
 /**
- * Minimal fetch wrapper for the backend API. Temporary: replaced by the
- * hey-api generated client once the OpenAPI spec is available.
+ * Helpers around the hey-api generated SDK (src/lib/api/generated).
+ * Regenerate it with `pnpm api:generate` after editing openapi/openapi.yaml.
  */
 export class ApiError extends Error {
   constructor(
@@ -15,23 +13,15 @@ export class ApiError extends Error {
   }
 }
 
-export async function apiFetch<T>(
-  path: string,
-  { token, ...init }: RequestInit & { token?: string } = {},
-): Promise<T> {
-  const headers = new Headers(init.headers);
-  if (init.body && !headers.has("Content-Type")) {
-    headers.set("Content-Type", "application/json");
-  }
-  if (token) headers.set("Authorization", `Bearer ${token}`);
+type SdkResult<T> = { data?: T; error?: unknown; response?: Response };
 
-  const res = await fetch(`${env.NEXT_PUBLIC_API_URL}${path}`, { ...init, headers });
-  const body: unknown = res.status === 204 ? undefined : await res.json().catch(() => undefined);
+/** Turn an SDK result into its data, or throw an ApiError (status 0 = network failure). */
+export async function unwrap<T>(result: Promise<SdkResult<T>>): Promise<T> {
+  const { data, error, response } = await result;
+  if (error === undefined && response?.ok) return data as T;
 
-  if (!res.ok) {
-    const message =
-      (body as { message?: string } | undefined)?.message ?? `Request failed (${res.status})`;
-    throw new ApiError(res.status, message, body);
-  }
-  return body as T;
+  const message =
+    (error as { message?: string } | undefined)?.message ??
+    (response ? `Request failed (${response.status})` : "Could not reach the server");
+  throw new ApiError(response?.status ?? 0, message, error);
 }

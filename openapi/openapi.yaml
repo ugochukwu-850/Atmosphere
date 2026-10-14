@@ -1,0 +1,1416 @@
+openapi: 3.1.0
+info:
+  title: ArtMostSphere API
+  version: 0.1.0
+  description: |
+    Draft contract for the ArtMostSphere frontend, modelled on the flows of the
+    current demo site (web-production-2a05.up.railway.app). It is the frontend's
+    proposal, not the backend's published spec: reconcile it with the real API
+    and regenerate the client (`pnpm api:generate`).
+
+    Conventions:
+    - Money is integer naira (`*Ngn`).
+    - Dates are ISO 8601 (`YYYY-MM-DD` for booking days).
+    - Lists are paginated with `page` / `pageSize` and return `{ items, page, pageSize, total }`.
+    - Auth is a bearer token from `/auth/login` or `/auth/register`.
+servers:
+  - url: http://localhost:8000
+    description: Local backend
+security:
+  - bearerAuth: []
+
+tags:
+  - name: auth
+  - name: me
+  - name: users
+  - name: meta
+  - name: listings
+  - name: scout
+  - name: talent
+  - name: casting
+  - name: bookings
+  - name: planner
+  - name: reports
+
+paths:
+  # ---------------------------------------------------------------- auth
+  /auth/login:
+    post:
+      tags: [auth]
+      operationId: login
+      summary: Sign in with email and password
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/LoginRequest" }
+      responses:
+        "200":
+          description: Signed in
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AuthResponse" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /auth/register:
+    post:
+      tags: [auth]
+      operationId: register
+      summary: Create an account (admins and ops are not created this way)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RegisterRequest" }
+      responses:
+        "201":
+          description: Account created and signed in
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AuthResponse" }
+        "409":
+          description: Email already registered
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /auth/magic-link:
+    post:
+      tags: [auth]
+      operationId: requestMagicLink
+      summary: Email a one-time sign-in link
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email: { type: string, format: email }
+                redirectTo: { type: string, description: Relative path to land on after sign-in }
+      responses:
+        "202": { description: Link sent if the email exists }
+
+  /auth/magic-link/verify:
+    post:
+      tags: [auth]
+      operationId: verifyMagicLink
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token]
+              properties:
+                token: { type: string }
+      responses:
+        "200":
+          description: Signed in
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AuthResponse" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /auth/providers:
+    get:
+      tags: [auth]
+      operationId: listAuthProviders
+      summary: Social sign-in providers configured on the API
+      security: []
+      responses:
+        "200":
+          description: Providers (empty when none configured)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required: [id, name, authorizeUrl]
+                  properties:
+                    id: { type: string, examples: [google] }
+                    name: { type: string }
+                    authorizeUrl: { type: string, format: uri }
+
+  /auth/logout:
+    post:
+      tags: [auth]
+      operationId: logout
+      responses:
+        "204": { description: Token revoked }
+
+  /auth/me:
+    get:
+      tags: [auth]
+      operationId: getCurrentUser
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/User" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  # ---------------------------------------------------------------- me
+  /me/profile:
+    patch:
+      tags: [me]
+      operationId: updateProfile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ProfileUpdate" }
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/User" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /me/roles:
+    post:
+      tags: [me]
+      operationId: addRole
+      summary: Add a role without registering again
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [role]
+              properties:
+                role: { $ref: "#/components/schemas/SelfServeRole" }
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/User" }
+
+  /me/socials:
+    put:
+      tags: [me]
+      operationId: updateSocials
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Socials" }
+      responses:
+        "200":
+          description: Updated socials
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Socials" }
+
+  /me/listings:
+    get:
+      tags: [me]
+      operationId: listMyListings
+      summary: Listings I own, including pending ones
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          description: My listings
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ListingPage" }
+
+  # ---------------------------------------------------------------- users
+  /users/{userId}:
+    get:
+      tags: [users]
+      operationId: getPublicProfile
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      responses:
+        "200":
+          description: Public profile
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PublicProfile" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  # ---------------------------------------------------------------- meta
+  /meta/cities:
+    get:
+      tags: [meta]
+      operationId: listCities
+      summary: Cities the catalog covers, with coordinates
+      security: []
+      responses:
+        "200":
+          description: Cities
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/City" }
+
+  # ---------------------------------------------------------------- listings
+  /listings:
+    get:
+      tags: [listings]
+      operationId: listListings
+      summary: Search published locations and gear
+      description: |
+        When `lat`/`lng` are set, results include `distanceKm` and sort closest first.
+      security: []
+      parameters:
+        - name: kind
+          in: query
+          schema: { $ref: "#/components/schemas/ListingKind" }
+        - name: category
+          in: query
+          description: Location type or gear category, depending on `kind`
+          schema: { type: string }
+        - $ref: "#/components/parameters/State"
+        - $ref: "#/components/parameters/City"
+        - $ref: "#/components/parameters/Lat"
+        - $ref: "#/components/parameters/Lng"
+        - name: q
+          in: query
+          schema: { type: string }
+        - name: minRateNgn
+          in: query
+          schema: { type: integer, minimum: 0 }
+        - name: maxRateNgn
+          in: query
+          schema: { type: integer, minimum: 0 }
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          description: Listings
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ListingPage" }
+    post:
+      tags: [listings]
+      operationId: createListing
+      summary: Create a listing (owner role); waits for admin publish unless ops
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ListingInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Listing" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /listings/{listingId}:
+    parameters:
+      - $ref: "#/components/parameters/ListingId"
+    get:
+      tags: [listings]
+      operationId: getListing
+      security: []
+      responses:
+        "200":
+          description: Listing
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Listing" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    patch:
+      tags: [listings]
+      operationId: updateListing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ListingInput" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Listing" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    delete:
+      tags: [listings]
+      operationId: archiveListing
+      responses:
+        "204": { description: Archived }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /listings/{listingId}/availability:
+    get:
+      tags: [listings]
+      operationId: getListingAvailability
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/ListingId"
+        - name: from
+          in: query
+          required: true
+          schema: { type: string, format: date }
+        - name: to
+          in: query
+          required: true
+          schema: { type: string, format: date }
+      responses:
+        "200":
+          description: Booked date ranges in the window
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/DateRange" }
+
+  # ---------------------------------------------------------------- scout pins
+  /scout-pins:
+    get:
+      tags: [scout]
+      operationId: listScoutPins
+      summary: Discovery-only spots (parks, beaches, landmarks); not bookable
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/State"
+        - $ref: "#/components/parameters/City"
+        - name: category
+          in: query
+          schema: { $ref: "#/components/schemas/LocationType" }
+      responses:
+        "200":
+          description: Pins
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/ScoutPin" }
+
+  # ---------------------------------------------------------------- talent
+  /talent:
+    get:
+      tags: [talent]
+      operationId: listTalent
+      security: []
+      parameters:
+        - name: role
+          in: query
+          schema: { $ref: "#/components/schemas/TalentRole" }
+        - $ref: "#/components/parameters/State"
+        - $ref: "#/components/parameters/City"
+        - $ref: "#/components/parameters/Lat"
+        - $ref: "#/components/parameters/Lng"
+        - name: q
+          in: query
+          schema: { type: string }
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          description: Talent
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TalentPage" }
+
+  /talent/{talentId}:
+    get:
+      tags: [talent]
+      operationId: getTalent
+      security: []
+      parameters:
+        - name: talentId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Talent profile
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Talent" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /me/talent:
+    put:
+      tags: [me, talent]
+      operationId: upsertMyTalentProfile
+      summary: Create or update my published creator listing (creator role)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/TalentInput" }
+      responses:
+        "200":
+          description: Saved (pending until admin publish)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Talent" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  # ---------------------------------------------------------------- casting
+  /casting-calls:
+    get:
+      tags: [casting]
+      operationId: listCastingCalls
+      security: []
+      parameters:
+        - name: role
+          in: query
+          schema: { $ref: "#/components/schemas/TalentRole" }
+        - $ref: "#/components/parameters/State"
+        - $ref: "#/components/parameters/City"
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          description: Calls
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CastingCallPage" }
+    post:
+      tags: [casting]
+      operationId: createCastingCall
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CastingCallInput" }
+      responses:
+        "201":
+          description: Published
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CastingCall" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /casting-calls/{callId}:
+    get:
+      tags: [casting]
+      operationId: getCastingCall
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/CallId"
+      responses:
+        "200":
+          description: Call
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CastingCall" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /casting-calls/{callId}/interest:
+    post:
+      tags: [casting]
+      operationId: expressInterest
+      parameters:
+        - $ref: "#/components/parameters/CallId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [message]
+              properties:
+                message:
+                  type: string
+                  maxLength: 1000
+                  description: Why you fit this role
+      responses:
+        "201":
+          description: Interest recorded
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CastingInterest" }
+        "409":
+          description: Already expressed interest
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  # ---------------------------------------------------------------- bookings
+  /bookings:
+    get:
+      tags: [bookings]
+      operationId: listBookings
+      summary: Bookings I requested (as renter) or received (as owner or creator)
+      parameters:
+        - name: as
+          in: query
+          schema:
+            type: string
+            enum: [requester, provider]
+        - name: status
+          in: query
+          schema: { $ref: "#/components/schemas/BookingStatus" }
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          description: Bookings
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BookingPage" }
+    post:
+      tags: [bookings]
+      operationId: createBooking
+      summary: Request a booking (location), rental (gear) or hire (talent)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BookingRequest" }
+      responses:
+        "201":
+          description: Requested
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Booking" }
+        "409":
+          description: Dates unavailable
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /bookings/{bookingId}:
+    get:
+      tags: [bookings]
+      operationId: getBooking
+      parameters:
+        - $ref: "#/components/parameters/BookingId"
+      responses:
+        "200":
+          description: Booking
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Booking" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /bookings/{bookingId}/transition:
+    post:
+      tags: [bookings]
+      operationId: transitionBooking
+      summary: Move a booking through its lifecycle
+      description: |
+        Provider: accept, decline, confirm_payment, complete.
+        Requester: cancel (before completion).
+      parameters:
+        - $ref: "#/components/parameters/BookingId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [action]
+              properties:
+                action:
+                  type: string
+                  enum: [accept, decline, cancel, confirm_payment, complete]
+                reason: { type: string, maxLength: 500 }
+      responses:
+        "200":
+          description: Updated booking
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Booking" }
+        "409":
+          description: Action not allowed in the current status
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /bookings/{bookingId}/messages:
+    parameters:
+      - $ref: "#/components/parameters/BookingId"
+    get:
+      tags: [bookings]
+      operationId: listBookingMessages
+      responses:
+        "200":
+          description: Thread, oldest first
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Message" }
+    post:
+      tags: [bookings]
+      operationId: sendBookingMessage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [body]
+              properties:
+                body: { type: string, minLength: 1, maxLength: 2000 }
+      responses:
+        "201":
+          description: Sent
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Message" }
+
+  /bookings/{bookingId}/handoffs:
+    post:
+      tags: [bookings]
+      operationId: recordHandoff
+      summary: Record gear pickup or return (gear rentals only)
+      parameters:
+        - $ref: "#/components/parameters/BookingId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [type]
+              properties:
+                type: { type: string, enum: [pickup, return] }
+                condition: { type: string, maxLength: 500 }
+      responses:
+        "201":
+          description: Recorded
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Handoff" }
+
+  # ---------------------------------------------------------------- planner
+  /planner/plans:
+    post:
+      tags: [planner]
+      operationId: createPlan
+      summary: Turn a creative brief into a production plan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PlanRequest" }
+      responses:
+        "201":
+          description: Plan
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Plan" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+    get:
+      tags: [planner]
+      operationId: listPlans
+      responses:
+        "200":
+          description: My saved plans, newest first
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/PlanSummary" }
+
+  /planner/plans/{planId}:
+    get:
+      tags: [planner]
+      operationId: getPlan
+      parameters:
+        - name: planId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Plan
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Plan" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  # ---------------------------------------------------------------- reports
+  /reports:
+    post:
+      tags: [reports]
+      operationId: reportIssue
+      summary: Footer "Report an issue"
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [message]
+              properties:
+                message: { type: string, minLength: 3, maxLength: 2000 }
+                pageUrl: { type: string }
+      responses:
+        "202": { description: Received }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+
+  parameters:
+    Page:
+      name: page
+      in: query
+      schema: { type: integer, minimum: 1, default: 1 }
+    PageSize:
+      name: pageSize
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 100, default: 24 }
+    State:
+      name: state
+      in: query
+      schema: { type: string, examples: [Lagos] }
+    City:
+      name: city
+      in: query
+      description: City slug
+      schema: { type: string, examples: [lagos] }
+    Lat:
+      name: lat
+      in: query
+      description: Production area origin; enables distance sorting
+      schema: { type: number }
+    Lng:
+      name: lng
+      in: query
+      schema: { type: number }
+    UserId:
+      name: userId
+      in: path
+      required: true
+      schema: { type: string }
+    ListingId:
+      name: listingId
+      in: path
+      required: true
+      schema: { type: string }
+    CallId:
+      name: callId
+      in: path
+      required: true
+      schema: { type: string }
+    BookingId:
+      name: bookingId
+      in: path
+      required: true
+      schema: { type: string }
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid token
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    Forbidden:
+      description: Role does not allow this action
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    ValidationError:
+      description: Invalid input
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ValidationError" }
+
+  schemas:
+    # ------------------------------------------------ shared
+    Error:
+      type: object
+      required: [message]
+      properties:
+        message: { type: string }
+        code: { type: string }
+
+    ValidationError:
+      type: object
+      required: [message, fieldErrors]
+      properties:
+        message: { type: string }
+        fieldErrors:
+          type: object
+          additionalProperties:
+            type: array
+            items: { type: string }
+
+    DateRange:
+      type: object
+      required: [startDate, endDate]
+      properties:
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date }
+
+    GeoPoint:
+      type: object
+      required: [lat, lng]
+      properties:
+        lat: { type: number, minimum: -90, maximum: 90 }
+        lng: { type: number, minimum: -180, maximum: 180 }
+
+    City:
+      type: object
+      required: [slug, name, state, lat, lng]
+      properties:
+        slug: { type: string, examples: [lagos] }
+        name: { type: string, examples: [Lagos] }
+        state: { type: string, examples: [Lagos] }
+        lat: { type: number }
+        lng: { type: number }
+
+    Place:
+      type: object
+      description: Where something sits; `distanceKm` is set when the request had an origin
+      required: [city, state, neighborhood]
+      properties:
+        city: { type: string, description: City slug }
+        state: { type: string }
+        neighborhood: { type: string, examples: [Ikeja] }
+        lat: { type: number }
+        lng: { type: number }
+        distanceKm: { type: number }
+
+    Photo:
+      type: object
+      required: [url]
+      properties:
+        url: { type: string, format: uri }
+        alt: { type: string }
+
+    # ------------------------------------------------ users
+    Role:
+      type: string
+      enum: [renter, owner, creator, admin, ops]
+
+    SelfServeRole:
+      type: string
+      enum: [renter, owner, creator]
+
+    UserSummary:
+      type: object
+      required: [id, name]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        avatarUrl: { type: string, format: uri }
+
+    User:
+      type: object
+      required: [id, name, email, roles]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        email: { type: string, format: email }
+        phone: { type: string }
+        roles:
+          type: array
+          items: { $ref: "#/components/schemas/Role" }
+        neighborhood: { type: string }
+        specialties:
+          type: array
+          items: { type: string }
+        bio: { type: string }
+        avatarUrl: { type: string, format: uri }
+        socials: { $ref: "#/components/schemas/Socials" }
+
+    ProfileUpdate:
+      type: object
+      properties:
+        name: { type: string, minLength: 2 }
+        phone: { type: string }
+        neighborhood: { type: string }
+        specialties:
+          type: array
+          items: { type: string }
+        bio: { type: string, maxLength: 2000 }
+
+    SocialPlatform:
+      type: string
+      enum: [instagram, tiktok, youtube, x, facebook, vimeo]
+
+    Socials:
+      type: object
+      properties:
+        instagram: { type: string }
+        tiktok: { type: string }
+        youtube: { type: string }
+        x: { type: string }
+        facebook: { type: string }
+        vimeo: { type: string }
+        showFeed:
+          description: One platform whose latest public posts show on the public profile
+          oneOf:
+            - $ref: "#/components/schemas/SocialPlatform"
+            - type: "null"
+
+    PublicProfile:
+      type: object
+      required: [id, name, roles]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        roles:
+          type: array
+          items: { $ref: "#/components/schemas/Role" }
+        neighborhood: { type: string }
+        bio: { type: string }
+        specialties:
+          type: array
+          items: { type: string }
+        avatarUrl: { type: string, format: uri }
+        socials: { $ref: "#/components/schemas/Socials" }
+        talent: { $ref: "#/components/schemas/Talent" }
+        listings:
+          type: array
+          items: { $ref: "#/components/schemas/Listing" }
+
+    # ------------------------------------------------ auth
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, minLength: 1 }
+
+    RegisterRequest:
+      type: object
+      required: [name, email, phone, password, roles]
+      properties:
+        name: { type: string, minLength: 2 }
+        email: { type: string, format: email }
+        phone: { type: string }
+        password: { type: string, minLength: 8 }
+        roles:
+          type: array
+          minItems: 1
+          items: { $ref: "#/components/schemas/SelfServeRole" }
+
+    AuthResponse:
+      type: object
+      required: [token, user]
+      properties:
+        token: { type: string }
+        user: { $ref: "#/components/schemas/User" }
+
+    # ------------------------------------------------ listings
+    ListingKind:
+      type: string
+      enum: [location, gear_rent, gear_sale]
+
+    ListingStatus:
+      type: string
+      enum: [pending, published, archived]
+
+    LocationType:
+      type: string
+      enum: [studio, stage, apartment, house, beach, park, gallery, landmark]
+
+    GearCategory:
+      type: string
+      enum: [camera, lens, lighting, audio, grip, drone, monitor, power, other]
+
+    Listing:
+      type: object
+      required: [id, kind, status, title, description, category, place, owner, photos, createdAt]
+      properties:
+        id: { type: string }
+        kind: { $ref: "#/components/schemas/ListingKind" }
+        status: { $ref: "#/components/schemas/ListingStatus" }
+        title: { type: string, examples: [Ikeja Sound Stage Bay] }
+        description: { type: string }
+        category:
+          type: string
+          description: LocationType for locations, GearCategory for gear
+        place: { $ref: "#/components/schemas/Place" }
+        owner: { $ref: "#/components/schemas/UserSummary" }
+        photos:
+          type: array
+          items: { $ref: "#/components/schemas/Photo" }
+        dayRateNgn:
+          type: integer
+          minimum: 0
+          description: Set for location and gear_rent
+        askingPriceNgn:
+          type: integer
+          minimum: 0
+          description: Set for gear_sale
+        location: { $ref: "#/components/schemas/LocationDetails" }
+        gear: { $ref: "#/components/schemas/GearDetails" }
+        createdAt: { type: string, format: date-time }
+
+    LocationDetails:
+      type: object
+      properties:
+        sizeSqm: { type: integer }
+        capacity: { type: integer }
+        amenities:
+          type: array
+          items: { type: string, examples: [Power backup, Parking, Green room] }
+        rules:
+          type: array
+          items: { type: string }
+        accessNotes: { type: string }
+
+    GearDetails:
+      type: object
+      properties:
+        brand: { type: string }
+        model: { type: string }
+        serial: { type: string, examples: [300D-1102] }
+        kitContents:
+          type: array
+          items: { type: string, examples: [ballast, dome, 5m power] }
+        condition: { type: string, enum: [new, like_new, good, fair] }
+
+    ListingInput:
+      type: object
+      required: [kind, title, description, category, place]
+      properties:
+        kind: { $ref: "#/components/schemas/ListingKind" }
+        title: { type: string, minLength: 3, maxLength: 120 }
+        description: { type: string, minLength: 10, maxLength: 4000 }
+        category: { type: string }
+        place:
+          type: object
+          required: [city, neighborhood, lat, lng]
+          properties:
+            city: { type: string }
+            neighborhood: { type: string }
+            lat: { type: number }
+            lng: { type: number }
+        photoUrls:
+          type: array
+          items: { type: string, format: uri }
+        dayRateNgn: { type: integer, minimum: 0 }
+        askingPriceNgn: { type: integer, minimum: 0 }
+        location: { $ref: "#/components/schemas/LocationDetails" }
+        gear: { $ref: "#/components/schemas/GearDetails" }
+
+    ListingPage:
+      type: object
+      required: [items, page, pageSize, total]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/Listing" }
+        page: { type: integer }
+        pageSize: { type: integer }
+        total: { type: integer }
+
+    ScoutPin:
+      type: object
+      required: [id, title, category, lat, lng]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        category: { $ref: "#/components/schemas/LocationType" }
+        note: { type: string }
+        photoUrl: { type: string, format: uri }
+        lat: { type: number }
+        lng: { type: number }
+        city: { type: string }
+        state: { type: string }
+
+    # ------------------------------------------------ talent
+    TalentRole:
+      type: string
+      enum: [actor, model, extra, dp, director, voice, sound, makeup, stylist, editor, other]
+
+    Talent:
+      type: object
+      required: [id, user, roles, headline, place, status]
+      properties:
+        id: { type: string }
+        user: { $ref: "#/components/schemas/UserSummary" }
+        status: { $ref: "#/components/schemas/ListingStatus" }
+        roles:
+          type: array
+          items: { $ref: "#/components/schemas/TalentRole" }
+        headline: { type: string, examples: [Location sound mixer] }
+        bio: { type: string }
+        specialties:
+          type: array
+          items: { type: string, examples: [sound mixer, boom] }
+        dayRateNgn: { type: integer, minimum: 0 }
+        phone: { type: string }
+        place: { $ref: "#/components/schemas/Place" }
+        photos:
+          type: array
+          items: { $ref: "#/components/schemas/Photo" }
+        socials: { $ref: "#/components/schemas/Socials" }
+
+    TalentInput:
+      type: object
+      required: [roles, headline, city, neighborhood]
+      properties:
+        roles:
+          type: array
+          minItems: 1
+          items: { $ref: "#/components/schemas/TalentRole" }
+        headline: { type: string, maxLength: 120 }
+        bio: { type: string, maxLength: 2000 }
+        specialties:
+          type: array
+          items: { type: string }
+        dayRateNgn: { type: integer, minimum: 0 }
+        city: { type: string }
+        neighborhood: { type: string }
+        lat: { type: number }
+        lng: { type: number }
+        photoUrls:
+          type: array
+          items: { type: string, format: uri }
+
+    TalentPage:
+      type: object
+      required: [items, page, pageSize, total]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/Talent" }
+        page: { type: integer }
+        pageSize: { type: integer }
+        total: { type: integer }
+
+    # ------------------------------------------------ casting
+    CastingCall:
+      type: object
+      required: [id, title, brief, roleNeeded, place, postedBy, createdAt, interestCount]
+      properties:
+        id: { type: string }
+        title: { type: string, examples: ["Featured extra — National Assembly steps"] }
+        brief: { type: string }
+        roleNeeded: { $ref: "#/components/schemas/TalentRole" }
+        place: { $ref: "#/components/schemas/Place" }
+        shootDate: { type: string, format: date }
+        postedBy: { $ref: "#/components/schemas/UserSummary" }
+        createdAt: { type: string, format: date-time }
+        interestCount: { type: integer, minimum: 0 }
+        viewerHasInterest:
+          type: boolean
+          description: Set when the request is authenticated
+
+    CastingCallInput:
+      type: object
+      required: [title, brief, roleNeeded, city, neighborhood]
+      properties:
+        title: { type: string, minLength: 3, maxLength: 120 }
+        brief: { type: string, minLength: 10, maxLength: 4000 }
+        roleNeeded: { $ref: "#/components/schemas/TalentRole" }
+        city: { type: string }
+        neighborhood: { type: string }
+        shootDate: { type: string, format: date }
+
+    CastingInterest:
+      type: object
+      required: [id, callId, user, message, createdAt]
+      properties:
+        id: { type: string }
+        callId: { type: string }
+        user: { $ref: "#/components/schemas/UserSummary" }
+        message: { type: string }
+        createdAt: { type: string, format: date-time }
+
+    CastingCallPage:
+      type: object
+      required: [items, page, pageSize, total]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/CastingCall" }
+        page: { type: integer }
+        pageSize: { type: integer }
+        total: { type: integer }
+
+    # ------------------------------------------------ bookings
+    BookingType:
+      type: string
+      enum: [booking, rental, hire]
+      description: location → booking, gear_rent → rental, talent → hire
+
+    BookingStatus:
+      type: string
+      enum: [requested, accepted, declined, cancelled, paid, in_progress, completed]
+
+    PaymentStatus:
+      type: string
+      enum: [unpaid, pending_confirmation, paid, refunded]
+
+    BookingRequest:
+      type: object
+      required: [startDate, endDate]
+      description: Exactly one of `listingId` or `talentId`
+      properties:
+        listingId: { type: string }
+        talentId: { type: string }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date }
+        note: { type: string, maxLength: 1000 }
+
+    Booking:
+      type: object
+      required:
+        [id, type, status, paymentStatus, startDate, endDate, days, totalNgn, requester, provider, createdAt]
+      properties:
+        id: { type: string }
+        type: { $ref: "#/components/schemas/BookingType" }
+        status: { $ref: "#/components/schemas/BookingStatus" }
+        paymentStatus: { $ref: "#/components/schemas/PaymentStatus" }
+        listing: { $ref: "#/components/schemas/Listing" }
+        talent: { $ref: "#/components/schemas/Talent" }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date }
+        days: { type: integer, minimum: 1 }
+        dayRateNgn: { type: integer }
+        totalNgn: { type: integer }
+        note: { type: string }
+        requester: { $ref: "#/components/schemas/UserSummary" }
+        provider: { $ref: "#/components/schemas/UserSummary" }
+        handoffs:
+          type: array
+          items: { $ref: "#/components/schemas/Handoff" }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    BookingPage:
+      type: object
+      required: [items, page, pageSize, total]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/Booking" }
+        page: { type: integer }
+        pageSize: { type: integer }
+        total: { type: integer }
+
+    Message:
+      type: object
+      required: [id, author, body, createdAt]
+      properties:
+        id: { type: string }
+        author: { $ref: "#/components/schemas/UserSummary" }
+        body: { type: string }
+        createdAt: { type: string, format: date-time }
+
+    Handoff:
+      type: object
+      required: [id, type, recordedBy, createdAt]
+      properties:
+        id: { type: string }
+        type: { type: string, enum: [pickup, return] }
+        condition: { type: string }
+        recordedBy: { $ref: "#/components/schemas/UserSummary" }
+        createdAt: { type: string, format: date-time }
+
+    # ------------------------------------------------ planner
+    PlanRequest:
+      type: object
+      required: [brief]
+      properties:
+        brief: { type: string, minLength: 10, maxLength: 4000 }
+        title: { type: string, maxLength: 120 }
+        state: { type: string }
+        city: { type: string }
+        neighborhood: { type: string, description: Preferred neighborhood }
+        shootDate: { type: string, format: date }
+        budgetNgn: { type: integer, minimum: 0 }
+
+    PlanRequirementCategory:
+      type: string
+      enum: [location, camera, lenses, lighting, audio, grip, cast, crew, other]
+
+    PlanRequirement:
+      type: object
+      required: [category, name]
+      description: Professional kit or people the brief needs, even if nothing is listed yet
+      properties:
+        category: { $ref: "#/components/schemas/PlanRequirementCategory" }
+        name: { type: string, examples: [Cinema camera] }
+        detail: { type: string, examples: ["Super 35, 4K+"] }
+        matches:
+          type: array
+          description: Catalog items that can fill this requirement
+          items: { $ref: "#/components/schemas/PlanMatch" }
+
+    PlanMatch:
+      type: object
+      required: [kind, id, title]
+      properties:
+        kind: { type: string, enum: [listing, talent] }
+        id: { type: string }
+        title: { type: string }
+        dayRateNgn: { type: integer }
+        distanceKm: { type: number }
+        photoUrl: { type: string, format: uri }
+
+    PlanTimelineItem:
+      type: object
+      required: [label]
+      properties:
+        label: { type: string, examples: [Recce] }
+        date: { type: string, format: date }
+        notes: { type: string }
+
+    PlanBudgetLine:
+      type: object
+      required: [label, amountNgn]
+      properties:
+        label: { type: string }
+        category: { $ref: "#/components/schemas/PlanRequirementCategory" }
+        amountNgn: { type: integer }
+
+    PlanSummary:
+      type: object
+      required: [id, title, createdAt]
+      properties:
+        id: { type: string }
+        title: { type: string, examples: [Fashion Hall event] }
+        createdAt: { type: string, format: date-time }
+
+    Plan:
+      type: object
+      required: [id, title, brief, overview, requirements, shotTypes, createdAt]
+      description: Mirrors the Figma plan card tabs (Overview, Location, Rent Gear, Talent, Timeline, Budget, Note)
+      properties:
+        id: { type: string }
+        title: { type: string }
+        brief: { type: string }
+        overview: { type: string }
+        place: { $ref: "#/components/schemas/Place" }
+        shootDate: { type: string, format: date }
+        requirements:
+          type: array
+          items: { $ref: "#/components/schemas/PlanRequirement" }
+        shotTypes:
+          type: array
+          items: { type: string, examples: [Wide establishing, Close-up] }
+        timeline:
+          type: array
+          items: { $ref: "#/components/schemas/PlanTimelineItem" }
+        budget:
+          type: array
+          items: { $ref: "#/components/schemas/PlanBudgetLine" }
+        budgetTotalNgn: { type: integer }
+        notes: { type: string }
+        createdAt: { type: string, format: date-time }

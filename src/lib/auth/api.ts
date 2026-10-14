@@ -1,13 +1,9 @@
-import { apiFetch } from "@/lib/api/client";
+import { unwrap } from "@/lib/api/client";
+import { getCurrentUser, login, register } from "@/lib/api/generated";
 import type { LoginInput, RegisterInput } from "@/lib/validators/auth";
 
-import type { AuthResponse, SessionUser } from "./types";
-
-// TODO: confirm endpoint paths and payloads against the backend OpenAPI spec.
 export const authApi = {
-  login: (input: LoginInput) =>
-    apiFetch<AuthResponse>("/auth/login", { method: "POST", body: JSON.stringify(input) }),
-  register: (input: RegisterInput) =>
-    apiFetch<AuthResponse>("/auth/register", { method: "POST", body: JSON.stringify(input) }),
-  me: (token: string) => apiFetch<SessionUser>("/auth/me", { token }),
+  login: (body: LoginInput) => unwrap(login({ body })),
+  register: (body: RegisterInput) => unwrap(register({ body })),
+  me: (token: string) => unwrap(getCurrentUser({ auth: token })),
 };

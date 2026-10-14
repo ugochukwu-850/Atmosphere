@@ -1,11 +1,3 @@
-import type { Role } from "@/lib/validators/auth";
+import type { User } from "@/lib/api/generated";
 
-export type SessionUser = {
-  id: string;
-  name: string;
-  email: string;
-  roles: Role[];
-};
-
-/** Shape the backend returns from login and register. */
-export type AuthResponse = { token: string; user: SessionUser };
+export type SessionUser = User;
