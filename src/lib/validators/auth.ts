@@ -3,10 +3,22 @@ import { z } from "zod";
 export const ROLES = ["renter", "owner", "talent"] as const;
 export type Role = (typeof ROLES)[number] | "admin";
 
-export const ROLE_LABELS: Record<(typeof ROLES)[number], string> = {
-  renter: "Renter",
-  owner: "Owner (list locations and gear)",
-  talent: "Creator / cast",
+export const ROLE_OPTIONS: Record<
+  (typeof ROLES)[number],
+  { title: string; description: string }
+> = {
+  renter: {
+    title: "Book & rent",
+    description: "Find locations, rent gear and hire talent.",
+  },
+  owner: {
+    title: "List spaces & gear",
+    description: "Earn from your studio, location or kit.",
+  },
+  talent: {
+    title: "Get hired",
+    description: "Show your work as cast or crew.",
+  },
 };
 
 export const loginSchema = z.object({
