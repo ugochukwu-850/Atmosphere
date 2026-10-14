@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 import { AreaPicker } from "@/components/area/AreaPicker";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { cn } from "@/lib/utils";
 
 import { NAV_ITEMS, isActive } from "./nav";
@@ -31,7 +32,11 @@ export function MobileNav() {
           className="absolute inset-x-0 top-16 flex flex-col gap-4 border-b border-white/10 bg-ink px-4 py-6"
         >
           {/* Any link click inside closes the menu. */}
-          <nav aria-label="Main" className="flex flex-col" onClick={() => setOpen(false)}>
+          <nav
+            aria-label="Main"
+            className="flex flex-col"
+            onClick={() => setOpen(false)}
+          >
             {NAV_ITEMS.map((item) => (
               <Link
                 key={item.href}
@@ -49,6 +54,10 @@ export function MobileNav() {
             </Link>
           </nav>
           <AreaPicker className="[&_select]:flex-1 [&_select]:border-white/15 [&_select]:bg-white/5" />
+          <div className="flex items-center justify-between text-sm text-ink-foreground/80 md:hidden">
+            Theme
+            <ThemeToggle />
+          </div>
         </div>
       )}
     </div>

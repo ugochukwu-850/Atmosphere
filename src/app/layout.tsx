@@ -3,6 +3,7 @@ import { Bricolage_Grotesque, Inter } from "next/font/google";
 
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
+import { themeScript } from "@/lib/theme/theme";
 
 import { Providers } from "./providers";
 import "./globals.css";
@@ -29,13 +30,16 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    // Theme: set data-theme="light" | "dark" on <html> to force a theme;
-    // with no attribute the system preference is used. See globals.css.
+    // data-theme is set by themeScript before paint, hence suppressHydrationWarning.
     <html
       lang="en"
+      data-theme="light"
       suppressHydrationWarning
       className={`${bricolage.variable} ${inter.variable} h-full antialiased`}
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body className="flex min-h-full flex-col">
         <Providers>
           <Header />

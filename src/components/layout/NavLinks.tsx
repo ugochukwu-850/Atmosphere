@@ -19,7 +19,7 @@ export function NavLinks({ className }: { className?: string }) {
             href={item.href}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "rounded-md px-3 py-2 text-sm text-ink-foreground/75 transition-colors hover:text-ink-foreground",
+              "rounded-md px-3 py-2 text-sm whitespace-nowrap text-ink-foreground/75 transition-colors hover:text-ink-foreground",
               active && "text-ink-foreground",
             )}
           >

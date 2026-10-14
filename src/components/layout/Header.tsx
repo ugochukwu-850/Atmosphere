@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 
 import { AreaPicker } from "@/components/area/AreaPicker";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { ButtonLink } from "@/components/ui/button";
 
 import { Logo } from "./Logo";
@@ -22,11 +23,14 @@ export function Header() {
         </Suspense>
         <div className="ml-auto flex items-center gap-3">
           <AreaPicker className="hidden xl:flex [&_select]:border-white/15 [&_select]:bg-white/5" />
+          <ThemeToggle className="hidden md:inline-flex" />
           <ButtonLink href="/list" size="sm" className="hidden sm:inline-flex">
             List something
           </ButtonLink>
           {/* Session lookup reads cookies, so it streams in behind a boundary. */}
-          <Suspense fallback={<div className="size-9 rounded-full bg-white/10" />}>
+          <Suspense
+            fallback={<div className="size-9 rounded-full bg-white/10" />}
+          >
             <UserMenu />
           </Suspense>
           <Suspense fallback={<div className="size-9 lg:hidden" />}>
