@@ -1,11 +1,10 @@
 /**
- * Server-side data access for pages, on top of the generated SDK.
- * Everything returns normalized view models (./types).
+ * Catalog data (locations, gear, cast) on top of the generated SDK.
+ * Everything returns normalized view models (./types). Signed-in areas live
+ * in their own modules (./bookings, ./people, …).
  */
-import { ApiError, unwrap } from "@/lib/api/client";
+import { orNull, unwrap } from "@/lib/api/client";
 import {
-  getV1BookingsById,
-  getV1Bookings,
   getV1CastCalls,
   getV1CastTalentById,
   getV1CatalogHome,
@@ -14,35 +13,17 @@ import {
   getV1ListingsById,
   getV1Locations,
   type ListingCard,
-  type PublicUser,
 } from "@/lib/api/generated";
 import { client } from "@/lib/api/generated/client.gen";
 import { areaQuery, type Area } from "@/lib/area/area";
 
-import { toBooking, toCall, toItem, toPerson, toPin } from "./normalize";
-import type {
-  BookingSummary,
-  CastingCall,
-  CatalogItem,
-  ItemDetail,
-  Person,
-  ScoutPin,
-} from "./types";
+import { toCall, toItem, toPerson, toPin } from "./normalize";
+import type { CastingCall, CatalogItem, ItemDetail, ScoutPin } from "./types";
 
 type SearchQuery = { area: Area; q?: string; category?: string };
 
 function query({ area, q, category }: SearchQuery) {
   return { ...areaQuery(area), q, category };
-}
-
-/** null on 404, rethrow anything else. */
-async function orNull<T>(promise: Promise<T>): Promise<T | null> {
-  try {
-    return await promise;
-  } catch (err) {
-    if (err instanceof ApiError && err.status === 404) return null;
-    throw err;
-  }
 }
 
 const isPin = (p: ScoutPin | null): p is ScoutPin => p !== null;
@@ -116,33 +97,4 @@ export async function getTalent(id: string): Promise<ItemDetail | null> {
 export async function listCastingCalls(): Promise<CastingCall[]> {
   const data = await unwrap(getV1CastCalls());
   return (data.calls ?? []).map(toCall);
-}
-
-// ------------------------------------------------------------- people
-
-export async function getPerson(id: string): Promise<Person | null> {
-  // Spec gap: the 200 response is typed as `Ok`; the API returns `{ user }`.
-  const data = await orNull(
-    unwrap(
-      client.get<{ 200: { user?: PublicUser } }>({
-        url: "/v1/users/{id}",
-        path: { id },
-      }),
-    ),
-  );
-  return data?.user ? toPerson(data.user) : null;
-}
-
-// ------------------------------------------------------------- bookings
-
-export async function listBookings(token: string): Promise<BookingSummary[]> {
-  const data = await unwrap(getV1Bookings({ auth: token }));
-  return (data.bookings ?? []).map(toBooking);
-}
-
-export async function getBookingThread(token: string, id: string) {
-  const data = await orNull(
-    unwrap(getV1BookingsById({ auth: token, path: { id } })),
-  );
-  return data?.booking ?? null;
 }

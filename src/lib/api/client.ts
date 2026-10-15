@@ -28,3 +28,13 @@ export async function unwrap<T>(result: Promise<SdkResult<T>>): Promise<T> {
       : "Could not reach the server");
   throw new ApiError(response?.status ?? 0, message, error);
 }
+
+/** Resolve to null on a 404 and rethrow anything else. */
+export async function orNull<T>(promise: Promise<T>): Promise<T | null> {
+  try {
+    return await promise;
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) return null;
+    throw err;
+  }
+}
