@@ -1,9 +1,29 @@
 /** What people can search for, in the order of the Figma hero search tabs. */
 export const SEARCH_TARGETS = [
-  { key: "location", label: "Location", path: "/locations", placeholder: "Studio, rooftop, warehouse…" },
-  { key: "cast", label: "Cast & Talent", path: "/cast", placeholder: "Actor, DP, sound, makeup…" },
-  { key: "rent", label: "Rent Gear", path: "/gear", placeholder: "Cinema camera, lights, audio…" },
-  { key: "buy", label: "Buy Gear", path: "/gear/sale", placeholder: "Used camera, lenses…" },
+  {
+    key: "location",
+    label: "Location",
+    path: "/locations",
+    placeholder: "Studio, rooftop, warehouse…",
+  },
+  {
+    key: "cast",
+    label: "Cast & Talent",
+    path: "/cast",
+    placeholder: "Actor, DP, sound, makeup…",
+  },
+  {
+    key: "rent",
+    label: "Rent Gear",
+    path: "/gear",
+    placeholder: "Cinema camera, lights, audio…",
+  },
+  {
+    key: "buy",
+    label: "Buy Gear",
+    path: "/gear/sale",
+    placeholder: "Used camera, lenses…",
+  },
 ] as const;
 
 export type SearchTarget = (typeof SEARCH_TARGETS)[number];
@@ -18,11 +38,16 @@ export function targetForPath(pathname: string): SearchTarget {
   return (
     [...SEARCH_TARGETS]
       .sort((a, b) => b.path.length - a.path.length)
-      .find((t) => pathname === t.path || pathname.startsWith(`${t.path}/`)) ?? SEARCH_TARGETS[0]
+      .find((t) => pathname === t.path || pathname.startsWith(`${t.path}/`)) ??
+    SEARCH_TARGETS[0]
   );
 }
 
-export function searchHref(target: SearchTarget, q?: string, date?: string): string {
+export function searchHref(
+  target: SearchTarget,
+  q?: string,
+  date?: string,
+): string {
   const params = new URLSearchParams();
   if (q?.trim()) params.set("q", q.trim());
   if (date) params.set("date", date);
