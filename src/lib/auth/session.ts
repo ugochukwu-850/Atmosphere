@@ -36,6 +36,7 @@ export const getCurrentUser = cache(async (): Promise<SessionUser | null> => {
   try {
     return await authApi.me(token);
   } catch {
+    // Expired token or API down: treat as signed out.
     return null;
   }
 });

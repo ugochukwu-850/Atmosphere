@@ -1,0 +1,2573 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "ArtMostSphere API",
+    "version": "0.1.0",
+    "description": "Africa's production OS HTTP API. Live catalog starts in Nigeria. Filter with state / city spatial context.\n\nAuth is the httpOnly cookie `ams_session` (set by login/register) or `Authorization: Bearer`.\nAfter **Auth → Login**, Scalar keeps the cookie for later calls on this origin.\n\nSeed password for all demo users: `Lagos2026!`\n\n| Email | Roles |\n| --- | --- |\n| ada@artmostsphere.ng | renter |\n| kunle@artmostsphere.ng | owner |\n| amaka@artmostsphere.ng | talent |\n| tunde@artmostsphere.ng | talent |\n| chioma@artmostsphere.ng | talent |\n| seun@artmostsphere.ng | talent |\n| admin@artmostsphere.ng | admin |"
+  },
+  "servers": [{ "url": "/", "description": "This API process" }],
+  "tags": [
+    { "name": "Health", "description": "Liveness" },
+    {
+      "name": "Auth",
+      "description": "Register, login, email/social SSO, session cookie"
+    },
+    {
+      "name": "Users",
+      "description": "Current user, public profiles, social feed"
+    },
+    { "name": "Catalog", "description": "Home feed" },
+    { "name": "Locations", "description": "Bookable spaces and public pins" },
+    { "name": "Gear", "description": "Bookable kit" },
+    { "name": "Listings", "description": "Listing detail" },
+    { "name": "Cast", "description": "Talent board and calls" },
+    { "name": "Bookings", "description": "Requests, escrow stub, handoff" },
+    { "name": "Planner", "description": "Catalog-grounded shoot plans" },
+    { "name": "Admin", "description": "Review listings and pins" },
+    { "name": "Issues", "description": "Feedback log (no database write)" }
+  ],
+  "security": [{ "cookieAuth": [] }, { "bearerAuth": [] }],
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": ["Health"],
+        "summary": "Health check",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "API is up",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Health" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/register": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Register and set session cookie",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/RegisterRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created and signed in",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SessionUserEnvelope" }
+              }
+            }
+          },
+          "400": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "409": {
+            "description": "Email already registered",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "429": {
+            "description": "Auth rate limit",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/login": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Login and set session cookie",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/LoginRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Signed in",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SessionUserEnvelope" }
+              }
+            }
+          },
+          "400": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "401": {
+            "description": "Wrong email or password",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "429": {
+            "description": "Auth rate limit",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/logout": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Clear session cookie",
+        "security": [],
+        "responses": { "204": { "description": "Cookie cleared" } }
+      }
+    },
+    "/v1/auth/me": {
+      "get": {
+        "tags": ["Auth"],
+        "summary": "Current user (optional auth)",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Current user",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SessionUserEnvelope" }
+              }
+            }
+          },
+          "401": {
+            "description": "Not signed in",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/UnauthorizedMe" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/sso": {
+      "get": {
+        "tags": ["Auth"],
+        "summary": "Which email/social SSO methods are configured",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Ok" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/email": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Send an email magic-link (non-admins)",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/MagicLinkRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Ok" }
+              }
+            }
+          },
+          "400": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "403": {
+            "description": "Admins use password login",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "429": {
+            "description": "Auth rate limit",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/email/consume": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Consume an email magic-link",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MagicLinkConsumeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Signed in",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SessionUserEnvelope" }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "403": {
+            "description": "Admins use password login",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/oauth/{provider}": {
+      "get": {
+        "tags": ["Auth"],
+        "summary": "Start Google, Facebook, Instagram, or X sign-in",
+        "security": [],
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["google", "facebook", "instagram", "x"]
+            }
+          },
+          {
+            "name": "callbackUrl",
+            "in": "query",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Ok" }
+              }
+            }
+          },
+          "400": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/oauth/{provider}/callback": {
+      "get": {
+        "tags": ["Auth"],
+        "summary": "OAuth callback; sets cookie and redirects",
+        "security": [],
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "302": { "description": "Redirect to the app or /login?ssoError=" }
+        }
+      }
+    },
+    "/v1/auth/session": {
+      "get": {
+        "tags": ["Auth"],
+        "summary": "Current user (requires auth)",
+        "responses": {
+          "200": {
+            "description": "Current user",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SessionUserEnvelope" }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/users/me": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "Account plus profile",
+        "description": "Session fields plus bio, neighborhood, and specialties. Used by `/account`.",
+        "responses": {
+          "200": {
+            "description": "Account plus profile",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AccountUserEnvelope" }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Users"],
+        "summary": "Update name, phone, or profile",
+        "description": "Re-issues `ams_session` so the cookie name and phone stay current.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateAccountRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated account",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AccountUserEnvelope" }
+              }
+            }
+          },
+          "400": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/users/me/social": {
+      "put": {
+        "tags": ["Users"],
+        "summary": "Replace social accounts on the signed-in profile",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ReplaceSocialRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Account plus profile",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AccountUserEnvelope" }
+              }
+            }
+          },
+          "400": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/users/{id}": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "Public profile",
+        "security": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Ok" }
+              }
+            }
+          },
+          "404": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/users/{id}/feed": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "Latest public posts for the selected social platform",
+        "security": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "platform",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "instagram",
+                "tiktok",
+                "youtube",
+                "x",
+                "facebook",
+                "vimeo"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Ok" }
+              }
+            }
+          },
+          "404": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/users/me/roles": {
+      "post": {
+        "tags": ["Users"],
+        "summary": "Add renter, owner, or talent",
+        "description": "Idempotent upsert. Cannot assign `admin`. Re-issues `ams_session` so Next middleware sees the new roles.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/AddRoleRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Account with new role",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AccountUserEnvelope" }
+              }
+            }
+          },
+          "400": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/catalog/places": {
+      "get": {
+        "tags": ["Catalog"],
+        "summary": "Live gazetteer (starting in Nigeria): states and metro fences",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Cities with default radius",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PlacesPage" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/catalog/home": {
+      "get": {
+        "tags": ["Catalog"],
+        "summary": "Home feed",
+        "description": "Optional state / metro spatial context.",
+        "security": [],
+        "parameters": [
+          {
+            "name": "scope",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["country", "state", "metro"]
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "schema": { "type": "string", "maxLength": 80 }
+          },
+          {
+            "name": "city",
+            "in": "query",
+            "schema": { "type": "string", "maxLength": 80 }
+          },
+          { "name": "lat", "in": "query", "schema": { "type": "number" } },
+          { "name": "lng", "in": "query", "schema": { "type": "number" } },
+          {
+            "name": "radiusKm",
+            "in": "query",
+            "schema": { "type": "number", "minimum": 1, "maximum": 250 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Nearest published locations, rental kit, sale kit, and talent plus pin count",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CatalogHome" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/locations": {
+      "get": {
+        "tags": ["Locations"],
+        "summary": "Search published locations and pins",
+        "security": [],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": { "type": "string", "maxLength": 80 }
+          },
+          {
+            "name": "neighborhood",
+            "in": "query",
+            "schema": { "type": "string", "maxLength": 80 }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "schema": { "type": "string", "maxLength": 80 }
+          },
+          {
+            "name": "scope",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["country", "state", "metro"]
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "schema": { "type": "string", "maxLength": 80 }
+          },
+          {
+            "name": "city",
+            "in": "query",
+            "schema": { "type": "string", "maxLength": 80 }
+          },
+          { "name": "lat", "in": "query", "schema": { "type": "number" } },
+          { "name": "lng", "in": "query", "schema": { "type": "number" } },
+          {
+            "name": "radiusKm",
+            "in": "query",
+            "schema": { "type": "number", "minimum": 1, "maximum": 250 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Listings and pins",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/LocationsPage" }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Locations"],
+        "summary": "Create a location listing",
+        "description": "Requires owner or admin. Status is `pending` unless the caller is admin.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateListingRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created listing",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ListingEnvelope" }
+              }
+            }
+          },
+          "400": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "403": {
+            "description": "Owner role required",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/gear": {
+      "get": {
+        "tags": ["Gear"],
+        "summary": "Search published rental gear",
+        "security": [],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": { "type": "string", "maxLength": 80 }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "schema": { "type": "string", "maxLength": 80 }
+          },
+          {
+            "name": "neighborhood",
+            "in": "query",
+            "schema": { "type": "string", "maxLength": 80 }
+          },
+          {
+            "name": "scope",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["country", "state", "metro"]
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "schema": { "type": "string", "maxLength": 80 }
+          },
+          {
+            "name": "city",
+            "in": "query",
+            "schema": { "type": "string", "maxLength": 80 }
+          },
+          { "name": "lat", "in": "query", "schema": { "type": "number" } },
+          { "name": "lng", "in": "query", "schema": { "type": "number" } },
+          {
+            "name": "radiusKm",
+            "in": "query",
+            "schema": { "type": "number", "minimum": 1, "maximum": 250 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Gear listings",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ListingsPage" }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Gear"],
+        "summary": "Create a rental gear listing",
+        "description": "Requires owner or admin. Day-rate kit only. `serialNumber` and `accessories` are stored.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateListingRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created listing",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ListingEnvelope" }
+              }
+            }
+          },
+          "400": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "403": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/gear/sale": {
+      "get": {
+        "tags": ["Gear"],
+        "summary": "Search gear for sale",
+        "security": [],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": { "type": "string", "maxLength": 80 }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "schema": { "type": "string", "maxLength": 80 }
+          },
+          {
+            "name": "neighborhood",
+            "in": "query",
+            "schema": { "type": "string", "maxLength": 80 }
+          },
+          {
+            "name": "scope",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["country", "state", "metro"]
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "schema": { "type": "string", "maxLength": 80 }
+          },
+          {
+            "name": "city",
+            "in": "query",
+            "schema": { "type": "string", "maxLength": 80 }
+          },
+          { "name": "lat", "in": "query", "schema": { "type": "number" } },
+          { "name": "lng", "in": "query", "schema": { "type": "number" } },
+          {
+            "name": "radiusKm",
+            "in": "query",
+            "schema": { "type": "number", "minimum": 1, "maximum": 250 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sale listings",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ListingsPage" }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Gear"],
+        "summary": "Create a gear-for-sale listing",
+        "description": "Separate from rental. Purchase workflow is not live. Requires owner or admin.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateGearSaleRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created listing",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ListingEnvelope" }
+              }
+            }
+          },
+          "400": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "403": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/listings/{id}": {
+      "get": {
+        "tags": ["Listings"],
+        "summary": "Listing detail",
+        "security": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Listing with owner",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ListingDetail" }
+              }
+            }
+          },
+          "404": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/cast": {
+      "get": {
+        "tags": ["Cast"],
+        "summary": "Talent board and open calls",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Published talent and 5 newest open calls",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CastHome" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/cast/talent/{id}": {
+      "get": {
+        "tags": ["Cast"],
+        "summary": "Talent listing with owner profile",
+        "security": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Talent listing",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ListingDetail" }
+              }
+            }
+          },
+          "404": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/cast/talent": {
+      "post": {
+        "tags": ["Cast"],
+        "summary": "Create a talent listing",
+        "description": "Requires talent or admin.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateListingRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created listing",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ListingEnvelope" }
+              }
+            }
+          },
+          "400": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "403": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/cast/calls": {
+      "get": {
+        "tags": ["Cast"],
+        "summary": "All casting calls",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Calls with application counts",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CastCallsPage" }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Cast"],
+        "summary": "Post a casting call",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CastingCallRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/IdOnlyCall" }
+              }
+            }
+          },
+          "400": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/cast/calls/{id}/apply": {
+      "post": {
+        "tags": ["Cast"],
+        "summary": "Apply to a call",
+        "description": "Requires talent or admin. 404 if the call is missing. Upserts on (callId, talentId).",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ApplyRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Ok" }
+              }
+            }
+          },
+          "400": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "403": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "404": {
+            "description": "Call not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/bookings": {
+      "get": {
+        "tags": ["Bookings"],
+        "summary": "Bookings for the signed-in user",
+        "responses": {
+          "200": {
+            "description": "Renter or owner bookings",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/BookingsPage" }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Bookings"],
+        "summary": "Request a booking",
+        "description": "Published location, gear, or talent listings. gear_sale cannot be booked. Talent hire is the same request desk, not licensed escrow. Overlapping active dates are rejected.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/BookingRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/IdOnlyBooking" }
+              }
+            }
+          },
+          "400": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "403": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/bookings/{id}": {
+      "get": {
+        "tags": ["Bookings"],
+        "summary": "Booking thread",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Messages and handoffs",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/BookingThread" }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "403": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "404": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/bookings/{id}/accept": {
+      "post": {
+        "tags": ["Bookings"],
+        "summary": "Owner accepts (awaiting_funds)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Ok" }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "403": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "404": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/bookings/{id}/decline": {
+      "post": {
+        "tags": ["Bookings"],
+        "summary": "Owner declines",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Ok" }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "403": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "404": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/bookings/{id}/mark-paid": {
+      "post": {
+        "tags": ["Bookings"],
+        "summary": "Owner or admin marks paid",
+        "description": "Updates booking to confirmed and writes an escrow.manual ledger line in one transaction. Paystack is a stub.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Ok" }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "403": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "404": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/bookings/{id}/messages": {
+      "post": {
+        "tags": ["Bookings"],
+        "summary": "Add a thread message",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/MessageRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Ok" }
+              }
+            }
+          },
+          "400": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "403": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/bookings/{id}/handoff": {
+      "post": {
+        "tags": ["Bookings"],
+        "summary": "File a handoff report",
+        "description": "Optional image, max 8MB. Gear listings move to `handoff_out` or `closed`.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": { "$ref": "#/components/schemas/HandoffForm" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Ok" }
+              }
+            }
+          },
+          "400": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "403": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/planner": {
+      "post": {
+        "tags": ["Planner"],
+        "summary": "Create a professional plan plus catalog rentals",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PlannerRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Conversation plus citations",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PlannerCreated" }
+              }
+            }
+          },
+          "400": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/planner/conversations/{id}": {
+      "get": {
+        "tags": ["Planner"],
+        "summary": "Load a saved plan",
+        "description": "Owner or admin only.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Conversation",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PlannerConversation" }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "403": {
+            "description": "Not your plan",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "404": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/ops": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "Ops snapshot",
+        "responses": {
+          "200": {
+            "description": "Pending listings, open bookings, recent plans",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AdminOps" }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "403": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/listings/{id}/review": {
+      "post": {
+        "tags": ["Admin"],
+        "summary": "Publish or reject a listing",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ReviewRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Ok" }
+              }
+            }
+          },
+          "400": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "403": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "404": {
+            "description": "Listing not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/pins": {
+      "post": {
+        "tags": ["Admin"],
+        "summary": "Create an unlisted public pin",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PinRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Ok" }
+              }
+            }
+          },
+          "400": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "403": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/issues": {
+      "post": {
+        "tags": ["Issues"],
+        "summary": "Log feedback",
+        "description": "Does not write to Postgres. Auth is optional.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/IssueRequest" }
+            }
+          }
+        },
+        "responses": {
+          "204": { "description": "Logged" },
+          "400": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "cookieAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "ams_session",
+        "description": "Set automatically by login/register. Use Try Request on this same origin."
+      },
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Paste the JWT from the ams_session cookie if calling from another origin."
+      }
+    },
+    "schemas": {
+      "Health": {
+        "type": "object",
+        "properties": {
+          "ok": { "type": "boolean" },
+          "service": { "type": "string" }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": ["error"],
+        "properties": {
+          "error": { "type": "string" },
+          "code": {
+            "type": "string",
+            "enum": [
+              "bad_request",
+              "validation_error",
+              "unauthorized",
+              "forbidden",
+              "not_found",
+              "conflict",
+              "rate_limited",
+              "internal_error",
+              "error"
+            ]
+          }
+        }
+      },
+      "UnauthorizedMe": {
+        "type": "object",
+        "properties": {
+          "error": { "type": "string" },
+          "code": { "type": "string" },
+          "user": { "type": "null" }
+        }
+      },
+      "SessionUser": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "email": { "type": "string" },
+          "name": { "type": "string" },
+          "phone": { "type": ["string", "null"] },
+          "roles": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "SessionUserEnvelope": {
+        "type": "object",
+        "properties": { "user": { "$ref": "#/components/schemas/SessionUser" } }
+      },
+      "AccountProfile": {
+        "type": "object",
+        "properties": {
+          "bio": { "type": "string" },
+          "neighborhood": { "type": "string" },
+          "specialties": { "type": "string" }
+        }
+      },
+      "AccountUser": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SessionUser" },
+          {
+            "type": "object",
+            "properties": {
+              "profile": { "$ref": "#/components/schemas/AccountProfile" },
+              "socialAccounts": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "platform": { "type": "string" },
+                    "handle": { "type": "string" },
+                    "url": { "type": "string" },
+                    "showFeed": { "type": "boolean" }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "AccountUserEnvelope": {
+        "type": "object",
+        "properties": { "user": { "$ref": "#/components/schemas/AccountUser" } }
+      },
+      "UpdateAccountRequest": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "minLength": 2, "maxLength": 80 },
+          "phone": { "type": "string", "minLength": 8, "maxLength": 24 },
+          "profile": {
+            "type": "object",
+            "properties": {
+              "bio": { "type": "string", "maxLength": 2000 },
+              "neighborhood": { "type": "string", "maxLength": 80 },
+              "specialties": { "type": "string", "maxLength": 200 }
+            }
+          }
+        }
+      },
+      "AddRoleRequest": {
+        "type": "object",
+        "required": ["role"],
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": ["renter", "owner", "talent"],
+            "example": "owner"
+          }
+        }
+      },
+      "RegisterRequest": {
+        "type": "object",
+        "required": ["name", "email", "phone", "password", "roles"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 80,
+            "example": "Ada Okonkwo"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "new@artmostsphere.ng"
+          },
+          "phone": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 24,
+            "example": "+2348000000000"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 72,
+            "example": "Lagos2026!"
+          },
+          "roles": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 3,
+            "items": {
+              "type": "string",
+              "enum": ["renter", "owner", "talent"]
+            },
+            "example": ["renter"]
+          }
+        }
+      },
+      "MagicLinkRequest": {
+        "type": "object",
+        "required": ["email"],
+        "properties": {
+          "email": { "type": "string", "format": "email" },
+          "callbackUrl": { "type": "string", "example": "/account" }
+        }
+      },
+      "MagicLinkConsumeRequest": {
+        "type": "object",
+        "required": ["token"],
+        "properties": { "token": { "type": "string" } }
+      },
+      "ReplaceSocialRequest": {
+        "type": "object",
+        "required": ["accounts"],
+        "properties": {
+          "accounts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["platform", "handle"],
+              "properties": {
+                "platform": {
+                  "type": "string",
+                  "enum": [
+                    "instagram",
+                    "tiktok",
+                    "youtube",
+                    "x",
+                    "facebook",
+                    "vimeo"
+                  ]
+                },
+                "handle": { "type": "string" },
+                "showFeed": { "type": "boolean" }
+              }
+            }
+          }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "required": ["email", "password"],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "ada@artmostsphere.ng"
+          },
+          "password": { "type": "string", "example": "Lagos2026!" }
+        }
+      },
+      "CreateListingRequest": {
+        "type": "object",
+        "required": [
+          "title",
+          "description",
+          "category",
+          "neighborhood",
+          "dayRateNgn"
+        ],
+        "properties": {
+          "title": { "type": "string", "minLength": 3, "maxLength": 120 },
+          "description": {
+            "type": "string",
+            "minLength": 12,
+            "maxLength": 4000
+          },
+          "category": { "type": "string", "minLength": 2, "maxLength": 80 },
+          "neighborhood": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 80,
+            "example": "Yaba"
+          },
+          "city": { "type": "string", "example": "Lagos" },
+          "state": { "type": "string", "example": "Lagos" },
+          "lat": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90,
+            "default": 6.5244
+          },
+          "lng": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180,
+            "default": 3.3792
+          },
+          "dayRateNgn": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 50000000,
+            "example": 150000
+          },
+          "serialNumber": { "type": "string", "maxLength": 80 },
+          "accessories": { "type": "string", "maxLength": 400 }
+        }
+      },
+      "CreateGearSaleRequest": {
+        "type": "object",
+        "required": [
+          "title",
+          "description",
+          "category",
+          "neighborhood",
+          "salePriceNgn"
+        ],
+        "properties": {
+          "title": { "type": "string", "minLength": 3, "maxLength": 120 },
+          "description": {
+            "type": "string",
+            "minLength": 12,
+            "maxLength": 4000
+          },
+          "category": { "type": "string", "minLength": 2, "maxLength": 80 },
+          "neighborhood": { "type": "string", "minLength": 2, "maxLength": 80 },
+          "city": { "type": "string", "example": "Lagos" },
+          "state": { "type": "string" },
+          "lat": { "type": "number" },
+          "lng": { "type": "number" },
+          "salePriceNgn": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "example": 1850000
+          },
+          "serialNumber": { "type": "string" },
+          "accessories": { "type": "string" }
+        }
+      },
+      "ListingCard": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "kind": {
+            "type": "string",
+            "enum": ["location", "gear", "gear_sale", "talent"]
+          },
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "category": { "type": "string" },
+          "neighborhood": { "type": "string" },
+          "city": { "type": "string" },
+          "state": { "type": "string" },
+          "lat": { "type": "number" },
+          "lng": { "type": "number" },
+          "dayRateNgn": { "type": "integer" },
+          "salePriceNgn": { "type": "integer" },
+          "status": { "type": "string" },
+          "serialNumber": { "type": ["string", "null"] },
+          "accessories": { "type": ["string", "null"] },
+          "photoUrl": { "type": ["string", "null"] },
+          "distanceKm": { "type": ["number", "null"] }
+        }
+      },
+      "PublicUser": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "phone": { "type": ["string", "null"] },
+          "profile": {
+            "type": ["object", "null"],
+            "additionalProperties": true
+          }
+        }
+      },
+      "PlacePin": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "category": { "type": "string" },
+          "neighborhood": { "type": "string" },
+          "lat": { "type": "number" },
+          "lng": { "type": "number" },
+          "accessNotes": { "type": "string" }
+        }
+      },
+      "CatalogHome": {
+        "type": "object",
+        "properties": {
+          "pins": { "type": "integer" },
+          "locations": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ListingCard" }
+          },
+          "gear": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ListingCard" }
+          },
+          "gearSale": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ListingCard" }
+          },
+          "talent": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ListingCard" }
+          }
+        }
+      },
+      "PlacesPage": {
+        "type": "object",
+        "properties": {
+          "country": { "type": "string" },
+          "states": { "type": "array", "items": { "type": "string" } },
+          "places": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "city": { "type": "string" },
+                "state": { "type": "string" },
+                "lat": { "type": "number" },
+                "lng": { "type": "number" },
+                "radiusKm": { "type": "number" }
+              }
+            }
+          }
+        }
+      },
+      "LocationsPage": {
+        "type": "object",
+        "properties": {
+          "listings": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ListingCard" }
+          },
+          "pins": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/PlacePin" }
+          }
+        }
+      },
+      "ListingsPage": {
+        "type": "object",
+        "properties": {
+          "listings": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ListingCard" }
+          }
+        }
+      },
+      "ListingEnvelope": {
+        "type": "object",
+        "properties": {
+          "listing": { "$ref": "#/components/schemas/ListingCard" }
+        }
+      },
+      "ListingDetail": {
+        "type": "object",
+        "properties": {
+          "listing": {
+            "allOf": [
+              { "$ref": "#/components/schemas/ListingCard" },
+              {
+                "type": "object",
+                "properties": {
+                  "owner": { "$ref": "#/components/schemas/PublicUser" }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "CastCall": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "roleNeeded": { "type": "string" },
+          "neighborhood": { "type": "string" },
+          "shootDate": { "type": ["string", "null"], "format": "date-time" },
+          "status": { "type": "string" }
+        }
+      },
+      "CastHome": {
+        "type": "object",
+        "properties": {
+          "talent": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ListingCard" }
+          },
+          "calls": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CastCall" }
+          }
+        }
+      },
+      "CastCallListed": {
+        "allOf": [
+          { "$ref": "#/components/schemas/CastCall" },
+          {
+            "type": "object",
+            "properties": {
+              "applications": { "type": "integer" },
+              "owner": { "$ref": "#/components/schemas/PublicUser" }
+            }
+          }
+        ]
+      },
+      "CastCallsPage": {
+        "type": "object",
+        "properties": {
+          "calls": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CastCallListed" }
+          }
+        }
+      },
+      "CastingCallRequest": {
+        "type": "object",
+        "required": ["title", "description"],
+        "properties": {
+          "title": { "type": "string", "minLength": 4, "maxLength": 120 },
+          "description": {
+            "type": "string",
+            "minLength": 12,
+            "maxLength": 4000
+          },
+          "roleNeeded": { "type": "string", "default": "actor" },
+          "neighborhood": { "type": "string", "default": "Lagos" },
+          "shootDate": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" }
+        }
+      },
+      "ApplyRequest": {
+        "type": "object",
+        "required": ["message"],
+        "properties": {
+          "message": { "type": "string", "minLength": 1, "maxLength": 2000 }
+        }
+      },
+      "IdOnlyCall": {
+        "type": "object",
+        "properties": {
+          "call": {
+            "type": "object",
+            "properties": { "id": { "type": "string" } }
+          }
+        }
+      },
+      "BookingRequest": {
+        "type": "object",
+        "required": ["listingId", "startDate", "endDate"],
+        "properties": {
+          "listingId": { "type": "string", "minLength": 8, "maxLength": 64 },
+          "startDate": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "example": "2026-10-01"
+          },
+          "endDate": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "example": "2026-10-03"
+          },
+          "note": { "type": "string", "maxLength": 2000 }
+        }
+      },
+      "IdOnlyBooking": {
+        "type": "object",
+        "properties": {
+          "booking": {
+            "type": "object",
+            "properties": { "id": { "type": "string" } }
+          }
+        }
+      },
+      "BookingSummary": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "status": { "type": "string" },
+          "totalNgn": { "type": "integer" },
+          "startDate": { "type": "string", "format": "date-time" },
+          "endDate": { "type": "string", "format": "date-time" },
+          "listing": { "$ref": "#/components/schemas/ListingCard" },
+          "renter": { "$ref": "#/components/schemas/PublicUser" },
+          "owner": { "$ref": "#/components/schemas/PublicUser" }
+        }
+      },
+      "BookingsPage": {
+        "type": "object",
+        "properties": {
+          "bookings": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/BookingSummary" }
+          }
+        }
+      },
+      "BookingThread": {
+        "type": "object",
+        "properties": {
+          "booking": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "id": { "type": "string" },
+              "status": { "type": "string" },
+              "messages": {
+                "type": "array",
+                "items": { "type": "object", "additionalProperties": true }
+              },
+              "handoffs": {
+                "type": "array",
+                "items": { "type": "object", "additionalProperties": true }
+              }
+            }
+          }
+        }
+      },
+      "MessageRequest": {
+        "type": "object",
+        "required": ["body"],
+        "properties": {
+          "body": { "type": "string", "minLength": 1, "maxLength": 2000 }
+        }
+      },
+      "HandoffForm": {
+        "type": "object",
+        "properties": {
+          "phase": { "type": "string", "default": "out", "example": "out" },
+          "notes": { "type": "string" },
+          "serialChecked": { "type": "string", "example": "true" },
+          "accessoriesComplete": { "type": "string" },
+          "existingDamageNoted": { "type": "string" },
+          "functionTest": { "type": "string" },
+          "photo": { "type": "string", "format": "binary" }
+        }
+      },
+      "PlannerRequest": {
+        "type": "object",
+        "required": ["idea"],
+        "properties": {
+          "idea": {
+            "type": "string",
+            "minLength": 4,
+            "maxLength": 2000,
+            "example": "Night fashion stills in Yaba"
+          },
+          "area": { "type": "string", "maxLength": 80, "example": "Yaba" },
+          "conversationId": { "type": "string" }
+        }
+      },
+      "PlannerCreated": {
+        "type": "object",
+        "properties": {
+          "conversationId": { "type": "string" },
+          "result": {
+            "type": "object",
+            "properties": {
+              "reply": { "type": "string" },
+              "citations": {
+                "type": "array",
+                "items": { "type": "object", "additionalProperties": true }
+              },
+              "suggestions": {
+                "type": "array",
+                "items": { "type": "object", "additionalProperties": true }
+              },
+              "estimate": { "type": "object", "additionalProperties": true },
+              "kitNeeds": {
+                "type": "array",
+                "items": { "type": "object", "additionalProperties": true }
+              },
+              "shootKind": { "type": "string" },
+              "shots": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        }
+      },
+      "PlannerConversation": {
+        "type": "object",
+        "properties": {
+          "conversation": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "title": { "type": "string" },
+              "messages": {
+                "type": "array",
+                "items": { "type": "object", "additionalProperties": true }
+              }
+            }
+          }
+        }
+      },
+      "AdminOps": {
+        "type": "object",
+        "properties": {
+          "pins": { "type": "integer" },
+          "pending": {
+            "type": "array",
+            "items": { "type": "object", "additionalProperties": true }
+          },
+          "bookings": {
+            "type": "array",
+            "items": { "type": "object", "additionalProperties": true }
+          },
+          "conversations": {
+            "type": "array",
+            "items": { "type": "object", "additionalProperties": true }
+          }
+        }
+      },
+      "ReviewRequest": {
+        "type": "object",
+        "required": ["status"],
+        "properties": {
+          "status": { "type": "string", "enum": ["published", "rejected"] }
+        }
+      },
+      "PinRequest": {
+        "type": "object",
+        "required": ["title", "description", "neighborhood"],
+        "properties": {
+          "title": { "type": "string", "minLength": 2, "maxLength": 120 },
+          "description": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 4000
+          },
+          "category": { "type": "string", "default": "landmark" },
+          "neighborhood": { "type": "string" },
+          "lat": { "type": "number", "default": 6.5244 },
+          "lng": { "type": "number", "default": 3.3792 },
+          "accessNotes": { "type": "string", "maxLength": 2000 }
+        }
+      },
+      "IssueRequest": {
+        "type": "object",
+        "required": ["body"],
+        "properties": { "body": { "type": "string", "maxLength": 2000 } }
+      },
+      "Ok": { "type": "object", "properties": { "ok": { "type": "boolean" } } }
+    }
+  }
+}

@@ -1,12 +1,22 @@
 # API client
 
-The typed backend client will be generated here with
-[hey-api](https://heyapi.dev) (`@hey-api/openapi-ts`) from the backend's
-OpenAPI spec. It is not set up yet.
+`generated/` is produced by [hey-api](https://heyapi.dev) from
+`openapi/openapi.yaml`. Don't hand-edit it; change the spec and run:
 
-When adding it:
+```bash
+pnpm api:generate
+```
 
-- Generate into this folder (e.g. `src/lib/api/generated/`) and don't hand-edit generated files.
-- Point the client's base URL at `env.NEXT_PUBLIC_API_URL` from `@/lib/env`.
-- Add a `generate:api` script to `package.json`.
-- Consider the hey-api TanStack Query plugin, since `@tanstack/react-query` is already wired up in `src/app/providers.tsx`.
+What gets generated (see `openapi-ts.config.ts`):
+
+- `sdk.gen.ts`: one function per operation (`login`, `listListings`, `createBooking`, …), with request and response validation through zod
+- `types.gen.ts`: TypeScript types for every schema
+- `zod.gen.ts`: zod schemas, also reusable for forms
+- `@tanstack/react-query.gen.ts`: `…Options` / `…Mutation` helpers for react-query
+
+Runtime config (base URL) lives in `hey-api.ts`. Pass the session token per
+call with `{ auth: token }`. Use `unwrap()` from `client.ts` to get the data
+or an `ApiError`.
+
+The spec is currently a draft modelled on the demo site. Replace it with the
+backend's real spec once it is published.

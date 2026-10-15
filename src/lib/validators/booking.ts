@@ -1,10 +1,10 @@
 import { z } from "zod";
 
-/** Example schema: a booking request for a listing (location, gear or talent). */
+/** Booking (location), rental (gear) or hire (talent) request. Dates are YYYY-MM-DD. */
 export const bookingRequestSchema = z
   .object({
-    startDate: z.coerce.date({ error: "Start date is required" }),
-    endDate: z.coerce.date({ error: "End date is required" }),
+    startDate: z.iso.date({ error: "Pick a start date" }),
+    endDate: z.iso.date({ error: "Pick an end date" }),
     note: z
       .string()
       .trim()
@@ -16,5 +16,59 @@ export const bookingRequestSchema = z
     path: ["endDate"],
   });
 
-export type BookingRequestInput = z.input<typeof bookingRequestSchema>;
-export type BookingRequest = z.output<typeof bookingRequestSchema>;
+export type BookingRequestInput = z.infer<typeof bookingRequestSchema>;
+
+/** Booking ids from the API are cuids; anything else never reaches the API. */
+export const bookingIdSchema = z
+  .string()
+  .trim()
+  .regex(/^[A-Za-z0-9_-]{1,64}$/, "That booking link isn't valid");
+
+/** POST /v1/bookings/{id}/messages body (1–2000 characters). */
+export const messageSchema = z.object({
+  body: z
+    .string()
+    .trim()
+    .min(1, "Write a message first")
+    .max(2000, "Messages must be 2000 characters or fewer"),
+});
+
+/**
+ * Photo types and size for handoff reports. The API takes up to 8MB, but the
+ * upload goes through a Server Action and Vercel caps function request bodies
+ * at 4.5MB, so we stop at 4MB.
+ */
+export const HANDOFF_PHOTO_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+] as const;
+export const HANDOFF_PHOTO_MAX_BYTES = 4_000_000;
+
+/** Gear handoff report: pickup ("out") or return ("in") checklist. */
+export const handoffSchema = z.object({
+  phase: z.enum(["out", "in"], { error: "Choose pickup or return" }),
+  serialChecked: z.boolean(),
+  accessoriesComplete: z.boolean(),
+  existingDamageNoted: z.boolean(),
+  functionTest: z.boolean(),
+  notes: z
+    .string()
+    .trim()
+    .max(2000, "Notes must be 2000 characters or fewer")
+    .optional(),
+  photo: z
+    .file()
+    .mime([...HANDOFF_PHOTO_TYPES], {
+      error: "Use a JPEG, PNG, WebP or GIF photo",
+    })
+    .max(HANDOFF_PHOTO_MAX_BYTES, { error: "Photo must be 4MB or smaller" })
+    .optional(),
+});
+
+/** Inclusive day count between two YYYY-MM-DD dates. */
+export function bookingDays(startDate: string, endDate: string): number {
+  const ms = Date.parse(endDate) - Date.parse(startDate);
+  return Number.isFinite(ms) && ms >= 0 ? Math.round(ms / 86_400_000) + 1 : 0;
+}

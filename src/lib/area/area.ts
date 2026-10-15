@@ -30,7 +30,9 @@ export function findCity(slug: string | undefined): City | undefined {
 }
 
 /** Point distances are measured from: the city, else the first city of the state. */
-export function areaOrigin(area: Area): { lat: number; lng: number } | undefined {
+export function areaOrigin(
+  area: Area,
+): { lat: number; lng: number } | undefined {
   const city = findCity(area.city);
   if (city) return city;
   return area.state ? CITIES.find((c) => c.state === area.state) : undefined;
@@ -58,4 +60,21 @@ export function distanceKm(
     Math.sin(dLat / 2) ** 2 +
     Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) ** 2;
   return 6371 * 2 * Math.asin(Math.sqrt(h));
+}
+
+/** Spatial context the API expects on catalog searches. */
+export function areaQuery(area: Area) {
+  const city = findCity(area.city);
+  if (city) {
+    return {
+      scope: "metro" as const,
+      state: city.state,
+      city: city.name,
+      lat: city.lat,
+      lng: city.lng,
+      radiusKm: city.radiusKm,
+    };
+  }
+  if (area.state) return { scope: "state" as const, state: area.state };
+  return { scope: "country" as const };
 }

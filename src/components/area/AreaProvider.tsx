@@ -9,7 +9,12 @@ import {
   type ReactNode,
 } from "react";
 
-import { AREA_COOKIE, parseArea, serializeArea, type Area } from "@/lib/area/area";
+import {
+  AREA_COOKIE,
+  parseArea,
+  serializeArea,
+  type Area,
+} from "@/lib/area/area";
 
 type AreaContextValue = { area: Area; setArea: (area: Area) => void };
 

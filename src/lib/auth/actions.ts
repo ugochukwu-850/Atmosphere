@@ -12,6 +12,8 @@ import { clearSession, setSessionToken } from "./session";
 export type FormState = {
   error?: string;
   fieldErrors?: Record<string, string[] | undefined>;
+  /** Submitted values (never the password) so the form can be refilled. */
+  values?: Record<string, string | string[]>;
 };
 
 /** Only allow same-site relative redirects after sign-in. */
@@ -22,42 +24,55 @@ function safeNext(value: FormDataEntryValue | null): string {
 
 function apiMessage(err: unknown): string {
   if (err instanceof ApiError) {
-    return err.status === 401 ? "Email or password is incorrect." : err.message;
+    if (err.status === 401) return "Email or password is incorrect.";
+    if (err.status === 429)
+      return "Too many attempts. Wait a minute and try again.";
+    return err.message;
   }
   return "Could not reach the server. Try again.";
 }
 
-export async function loginAction(_prev: FormState, formData: FormData): Promise<FormState> {
+export async function loginAction(
+  _prev: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const values = { email: String(formData.get("email") ?? "") };
   const parsed = loginSchema.safeParse({
     email: formData.get("email"),
     password: formData.get("password"),
   });
-  if (!parsed.success) return { fieldErrors: z.flattenError(parsed.error).fieldErrors };
+  if (!parsed.success)
+    return { values, fieldErrors: z.flattenError(parsed.error).fieldErrors };
 
   try {
-    const { token } = await authApi.login(parsed.data);
-    await setSessionToken(token);
+    await setSessionToken(await authApi.login(parsed.data));
   } catch (err) {
-    return { error: apiMessage(err) };
+    return { values, error: apiMessage(err) };
   }
   redirect(safeNext(formData.get("next")));
 }
 
-export async function registerAction(_prev: FormState, formData: FormData): Promise<FormState> {
+export async function registerAction(
+  _prev: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const values = {
+    name: String(formData.get("name") ?? ""),
+    email: String(formData.get("email") ?? ""),
+    phone: String(formData.get("phone") ?? ""),
+    roles: formData.getAll("roles").map(String),
+  };
   const parsed = registerSchema.safeParse({
-    name: formData.get("name"),
-    email: formData.get("email"),
-    phone: formData.get("phone"),
+    ...values,
     password: formData.get("password"),
-    roles: formData.getAll("roles"),
   });
-  if (!parsed.success) return { fieldErrors: z.flattenError(parsed.error).fieldErrors };
+  if (!parsed.success)
+    return { values, fieldErrors: z.flattenError(parsed.error).fieldErrors };
 
   try {
-    const { token } = await authApi.register(parsed.data);
-    await setSessionToken(token);
+    await setSessionToken(await authApi.register(parsed.data));
   } catch (err) {
-    return { error: apiMessage(err) };
+    return { values, error: apiMessage(err) };
   }
   redirect("/");
 }
