@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
+import { redirect, unstable_rethrow } from "next/navigation";
 import { Suspense } from "react";
 
 import {
@@ -75,6 +75,7 @@ async function BookingsContent({
   try {
     bookings = await listBookings(token);
   } catch (err) {
+    unstable_rethrow(err);
     if (err instanceof ApiError && err.status === 401)
       redirect(`/login?next=${encodeURIComponent("/bookings")}`);
     return (
