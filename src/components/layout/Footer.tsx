@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { IssueForm } from "@/components/issues/IssueForm";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { Container } from "@/components/ui/typography";
 import { cn } from "@/lib/utils";
@@ -134,6 +135,9 @@ export function Footer() {
                 </li>
               ))}
             </ul>
+            <div className="mt-3">
+              <IssueForm variant="footer" />
+            </div>
           </div>
 
           <nav

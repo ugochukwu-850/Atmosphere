@@ -40,6 +40,24 @@ export type Person = {
   }[];
 };
 
+/** One post from a profile's linked social feed. */
+export type FeedPost = {
+  id: string;
+  /** https only; anything else is dropped. */
+  url?: string;
+  caption?: string;
+  imageUrl?: string;
+  /** ISO date-time. */
+  postedAt?: string;
+};
+
+/** The signed-in user's own profile (GET /v1/users/me). */
+export type Account = Person & {
+  email: string;
+  /** "renter" | "owner" | "talent" | "admin". */
+  roles: string[];
+};
+
 export type ItemDetail = CatalogItem & { owner?: Person };
 
 export type ScoutPin = {
