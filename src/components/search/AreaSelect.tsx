@@ -26,15 +26,20 @@ export function decodeArea(value: string): Area {
 export function AreaSelect({
   className,
   selectClassName,
+  emptyLabel = "Anywhere in Nigeria",
   ...props
-}: Omit<ComponentProps<"select">, "children"> & { selectClassName?: string }) {
+}: Omit<ComponentProps<"select">, "children"> & {
+  selectClassName?: string;
+  /** Label of the "" option ("Choose a city" on forms that need a place). */
+  emptyLabel?: string;
+}) {
   return (
     <div className={cn("relative", className)}>
       <select
         className={cn("w-full appearance-none pr-10", selectClassName)}
         {...props}
       >
-        <option value="">Anywhere in Nigeria</option>
+        <option value="">{emptyLabel}</option>
         {STATES.map((state) => (
           <optgroup key={state} label={state}>
             <option value={`state:${state}`}>All of {state}</option>
