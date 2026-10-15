@@ -8,6 +8,9 @@ const control =
   "focus-visible:border-ring focus-visible:bg-background focus-visible:outline-none " +
   "disabled:opacity-50 aria-invalid:border-destructive";
 
+/** The field look, for controls rendered elsewhere (e.g. AreaSelect's select). */
+export { control as fieldControl };
+
 export function Input({ className, ...props }: ComponentProps<"input">) {
   return <input className={cn(control, "h-11", className)} {...props} />;
 }
