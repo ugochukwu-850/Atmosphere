@@ -53,13 +53,17 @@ export async function updateProfileAction(
   const { name, phone, ...profile } = parsed.data;
   try {
     await unwrap(
-      patchV1UsersMe({ auth: token, body: { name, phone, profile } }),
+      patchV1UsersMe({
+        auth: token,
+        body: { name, ...(phone ? { phone } : {}), profile },
+      }),
     );
   } catch (err) {
     return { values, error: apiErrorMessage(err) };
   }
   revalidatePath("/account");
-  return { ok: true, values };
+  // An empty phone was left unchanged, so refill it from the saved account.
+  return { ok: true, values: { ...values, phone: phone || undefined } };
 }
 
 /** Roles panel: POST /v1/users/me/roles for one missing role. */

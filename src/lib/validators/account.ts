@@ -29,11 +29,15 @@ export function isSocialPlatform(value: unknown): value is SocialPlatform {
 // Limits mirror PATCH /v1/users/me so errors show on the field, not as a 400.
 export const profileSchema = z.object({
   name: z.string().trim().min(2, "Enter your name").max(80),
+  // Empty = leave unchanged: the API can't clear a phone, and accounts made
+  // through OAuth or a magic link may not have one yet.
   phone: z
     .string()
     .trim()
-    .min(8, "Enter a valid phone number")
-    .max(24, "Enter a valid phone number"),
+    .refine(
+      (v) => v === "" || (v.length >= 8 && v.length <= 24),
+      "Enter a valid phone number",
+    ),
   neighborhood: z.string().trim().max(80, "Use 80 characters or fewer"),
   specialties: z.string().trim().max(200, "Use 200 characters or fewer"),
   bio: z.string().trim().max(2000, "Use 2,000 characters or fewer"),

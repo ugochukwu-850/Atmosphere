@@ -55,7 +55,6 @@ export function ProfileForm({
             placeholder="+234 800 000 0000"
             defaultValue={value("phone")}
             aria-invalid={Boolean(err("phone"))}
-            required
           />
         </Field>
         <Field
