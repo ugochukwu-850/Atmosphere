@@ -16,6 +16,7 @@ const eslintConfig = defineConfig([
     "src/lib/api/generated/**",
     // Other git worktrees checked out inside the repo folder.
     ".worktrees/**",
+    ".claude/**",
   ]),
 ]);
 
