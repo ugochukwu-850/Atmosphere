@@ -48,7 +48,7 @@ export function HandoffForm({
     if (file && !PHOTO_TYPES.includes(file.type))
       problem = "Use a JPEG, PNG, WebP or GIF photo";
     else if (file && file.size > HANDOFF_PHOTO_MAX_BYTES)
-      problem = "Photo must be 8MB or smaller";
+      problem = "Photo must be 4MB or smaller";
     if (problem) event.target.value = "";
     setPhotoError(problem);
   }
@@ -129,7 +129,7 @@ export function HandoffForm({
         label="Photo (optional)"
         htmlFor="handoff-photo"
         error={photoError ?? err("photo")}
-        hint="JPEG, PNG, WebP or GIF, up to 8MB."
+        hint="JPEG, PNG, WebP or GIF, up to 4MB."
       >
         <Input
           id="handoff-photo"

@@ -5,9 +5,9 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   experimental: {
-    // Gear handoff reports upload a photo of up to 8MB through a Server
-    // Action (default limit 1MB); the extra MB covers multipart overhead.
-    serverActions: { bodySizeLimit: "9mb" },
+    // Gear handoff reports upload a photo (max 4MB) through a Server Action
+    // (default limit 1MB). Vercel caps function request bodies at 4.5MB.
+    serverActions: { bodySizeLimit: "4.5mb" },
   },
   images: {
     remotePatterns: [

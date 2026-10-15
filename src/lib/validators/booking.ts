@@ -33,14 +33,18 @@ export const messageSchema = z.object({
     .max(2000, "Messages must be 2000 characters or fewer"),
 });
 
-/** Photo types and size the handoff endpoint accepts (API limit: 8MB). */
+/**
+ * Photo types and size for handoff reports. The API takes up to 8MB, but the
+ * upload goes through a Server Action and Vercel caps function request bodies
+ * at 4.5MB, so we stop at 4MB.
+ */
 export const HANDOFF_PHOTO_TYPES = [
   "image/jpeg",
   "image/png",
   "image/webp",
   "image/gif",
 ] as const;
-export const HANDOFF_PHOTO_MAX_BYTES = 8_000_000;
+export const HANDOFF_PHOTO_MAX_BYTES = 4_000_000;
 
 /** Gear handoff report: pickup ("out") or return ("in") checklist. */
 export const handoffSchema = z.object({
@@ -59,7 +63,7 @@ export const handoffSchema = z.object({
     .mime([...HANDOFF_PHOTO_TYPES], {
       error: "Use a JPEG, PNG, WebP or GIF photo",
     })
-    .max(HANDOFF_PHOTO_MAX_BYTES, { error: "Photo must be 8MB or smaller" })
+    .max(HANDOFF_PHOTO_MAX_BYTES, { error: "Photo must be 4MB or smaller" })
     .optional(),
 });
 
