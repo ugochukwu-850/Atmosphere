@@ -40,6 +40,13 @@ export type Person = {
   }[];
 };
 
+/** The signed-in user's own profile (GET /v1/users/me). */
+export type Account = Person & {
+  email: string;
+  /** "renter" | "owner" | "talent" | "admin". */
+  roles: string[];
+};
+
 export type ItemDetail = CatalogItem & { owner?: Person };
 
 export type ScoutPin = {

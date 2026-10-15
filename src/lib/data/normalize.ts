@@ -1,4 +1,5 @@
 import type {
+  AccountUser,
   BookingSummary as ApiBookingSummary,
   CastCallListed,
   ListingCard,
@@ -7,6 +8,7 @@ import type {
 } from "@/lib/api/generated";
 
 import type {
+  Account,
   BookingSummary,
   CastingCall,
   CatalogItem,
@@ -88,6 +90,14 @@ export function toPerson(user: AnyUser): Person {
         url: s.url,
         showFeed: Boolean(s.showFeed),
       })),
+  };
+}
+
+export function toAccount(user: AccountUser): Account {
+  return {
+    ...toPerson(user),
+    email: user.email ?? "",
+    roles: user.roles ?? [],
   };
 }
 
