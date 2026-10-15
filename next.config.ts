@@ -4,6 +4,11 @@ const nextConfig: NextConfig = {
   /* config options here */
   cacheComponents: true,
   partialPrefetching: true,
+  experimental: {
+    // Gear handoff reports upload a photo of up to 8MB through a Server
+    // Action (default limit 1MB); the extra MB covers multipart overhead.
+    serverActions: { bodySizeLimit: "9mb" },
+  },
   images: {
     remotePatterns: [
       // Listing photos served by the API.
