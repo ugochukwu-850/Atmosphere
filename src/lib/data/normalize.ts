@@ -12,6 +12,7 @@ import type {
   BookingSummary,
   CastingCall,
   CatalogItem,
+  FeedPost,
   ItemKind,
   Person,
   ScoutPin,
@@ -99,6 +100,74 @@ export function toAccount(user: AccountUser): Account {
     email: user.email ?? "",
     roles: user.roles ?? [],
   };
+}
+
+type Json = Record<string, unknown>;
+
+const isObject = (value: unknown): value is Json =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+/** First non-empty string among `keys`. */
+function pick(obj: Json, keys: string[]): string | undefined {
+  for (const key of keys) {
+    const value = obj[key];
+    if (typeof value === "string" && value.trim()) return value.trim();
+  }
+}
+
+const https = (url?: string) =>
+  url && /^https:\/\//i.test(url) ? url : undefined;
+
+/** The post list wherever it sits: a bare array, or under posts/items/feed/data. */
+function postList(data: unknown): unknown[] {
+  if (Array.isArray(data)) return data;
+  if (!isObject(data)) return [];
+  for (const key of ["posts", "items", "feed", "data"]) {
+    const list = postList(data[key]);
+    if (list.length > 0) return list;
+  }
+  return [];
+}
+
+/**
+ * GET /v1/users/{id}/feed is typed as `Ok` in the spec and no seeded profile
+ * has a linked account, so the real body could not be observed. Read the
+ * common field names defensively; posts without a link or text are dropped.
+ */
+export function toFeed(data: unknown): FeedPost[] {
+  return postList(data)
+    .filter(isObject)
+    .map((post, i) => {
+      const url = https(pick(post, ["url", "permalink", "link", "href"]));
+      const postedAt = pick(post, [
+        "publishedAt",
+        "postedAt",
+        "createdAt",
+        "timestamp",
+        "date",
+      ]);
+      return {
+        id: pick(post, ["id", "postId"]) ?? url ?? String(i),
+        url,
+        caption: pick(post, ["caption", "title", "text", "description"]),
+        imageUrl: https(
+          pick(post, [
+            "thumbnailUrl",
+            "thumbnail_url",
+            "thumbnail",
+            "imageUrl",
+            "image",
+            "mediaUrl",
+            "media_url",
+          ]),
+        ),
+        postedAt:
+          postedAt && !Number.isNaN(Date.parse(postedAt))
+            ? postedAt
+            : undefined,
+      };
+    })
+    .filter((post) => post.url || post.caption);
 }
 
 // The API also returns photoUrl and city on pins (not in the spec yet).
