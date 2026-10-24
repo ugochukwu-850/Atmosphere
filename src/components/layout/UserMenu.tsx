@@ -7,6 +7,7 @@ import { logoutAction } from "@/lib/auth/actions";
 import { getCurrentUser } from "@/lib/auth/session";
 
 const MENU = [
+  { href: "/dashboard", label: "Dashboard" },
   { href: "/bookings", label: "Bookings" },
   { href: "/list", label: "List something" },
   { href: "/account", label: "Account" },
