@@ -25,6 +25,7 @@
   --charcoal: #171715; /* Deep Charcoal 500 */
   --charcoal-600: #51514a;
   --charcoal-700: #8b8b7e;
+  --secondary-text: #706d64; /* Secondary Text (onboarding cards, footnotes) */
   --ivory: #f4f0e7; /* Main Background / Warm Ivory */
   --ivory-100: #31302d;
   --ivory-200: #62605a;
@@ -102,6 +103,7 @@
   --color-charcoal: var(--charcoal);
   --color-charcoal-600: var(--charcoal-600);
   --color-charcoal-700: var(--charcoal-700);
+  --color-secondary-text: var(--secondary-text);
   --color-ivory: var(--ivory);
   --color-ivory-100: var(--ivory-100);
   --color-ivory-200: var(--ivory-200);
