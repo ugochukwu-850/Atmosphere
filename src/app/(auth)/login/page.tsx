@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
 import { AuthHeading } from "@/components/auth/AuthShell";
 import { LoginForm } from "@/components/auth/LoginForm";
+import { getCurrentUser } from "@/lib/auth/session";
 
 export const metadata: Metadata = { title: "Sign in" };
 
@@ -18,6 +20,17 @@ export default function LoginPage() {
       <Suspense>
         <LoginForm />
       </Suspense>
+      {/* The session is request-time data, so the check streams in. */}
+      <Suspense>
+        <RedirectIfSignedIn />
+      </Suspense>
     </div>
   );
+}
+
+/** Already signed in: skip the form and open the dashboard. */
+async function RedirectIfSignedIn() {
+  // getCurrentUser validates the token, so an expired cookie still sees the form.
+  if (await getCurrentUser()) redirect("/dashboard");
+  return null;
 }
