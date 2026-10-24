@@ -53,6 +53,7 @@ export function CatalogCard({
   description,
   price,
   actions,
+  refreshOnSave,
 }: {
   id: string;
   /** Detail page; omitted for scout pins, which have no page. */
@@ -64,6 +65,8 @@ export function CatalogCard({
   description: string;
   price?: { amountNgn: number; unit: string };
   actions: ReactNode;
+  /** Re-render the page when the bookmark changes (saved-item lists). */
+  refreshOnSave?: boolean;
 }) {
   return (
     <article className="flex flex-col rounded-xl border border-sand/40 bg-card p-5 dark:border-border">
@@ -86,6 +89,7 @@ export function CatalogCard({
         <BookmarkButton
           id={id}
           title={title}
+          refresh={refreshOnSave}
           className="absolute top-3 right-3"
         />
       </div>
