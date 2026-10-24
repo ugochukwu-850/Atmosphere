@@ -50,7 +50,11 @@ export const authApi = {
   login: (body: LoginInput) => withToken(postV1AuthLogin({ body })),
   register: (body: RegisterInput) => withToken(postV1AuthRegister({ body })),
   me: async (token: string): Promise<SessionUser | null> => {
-    const data = await unwrap(getV1AuthMe({ auth: token }));
+    // The spec marks /auth/me as optional-auth (`security: []`), so the SDK
+    // would drop `auth: token` and send no credentials. Set the header directly.
+    const data = await unwrap(
+      getV1AuthMe({ headers: { Authorization: `Bearer ${token}` } }),
+    );
     return data.user?.id ? toSessionUser(data.user) : null;
   },
 };
