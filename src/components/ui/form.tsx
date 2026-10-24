@@ -47,6 +47,7 @@ export function Field({
   hint,
   children,
   className,
+  labelClassName,
 }: {
   label: string;
   htmlFor: string;
@@ -54,10 +55,13 @@ export function Field({
   hint?: string;
   children: ReactNode;
   className?: string;
+  labelClassName?: string;
 }) {
   return (
     <div className={cn("flex flex-col gap-2", className)}>
-      <Label htmlFor={htmlFor}>{label}</Label>
+      <Label htmlFor={htmlFor} className={labelClassName}>
+        {label}
+      </Label>
       {children}
       {error ? (
         <p className="text-xs text-destructive">{error}</p>
