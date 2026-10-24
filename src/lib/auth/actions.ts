@@ -16,10 +16,13 @@ export type FormState = {
   values?: Record<string, string | string[]>;
 };
 
+/** Signed-in home: the dashboard (Figma: "Welcome back to your creative space."). */
+const HOME = "/dashboard";
+
 /** Only allow same-site relative redirects after sign-in. */
 function safeNext(value: FormDataEntryValue | null): string {
   const next = typeof value === "string" ? value : "";
-  return next.startsWith("/") && !next.startsWith("//") ? next : "/";
+  return next.startsWith("/") && !next.startsWith("//") ? next : HOME;
 }
 
 function apiMessage(err: unknown): string {
@@ -74,7 +77,7 @@ export async function registerAction(
   } catch (err) {
     return { values, error: apiMessage(err) };
   }
-  redirect("/");
+  redirect(HOME);
 }
 
 export async function logoutAction() {

@@ -12,7 +12,7 @@ import { FormAlert } from "./AuthShell";
 import { PasswordInput } from "./PasswordInput";
 
 export function LoginForm() {
-  const next = useSearchParams().get("next") ?? "/";
+  const next = useSearchParams().get("next") ?? "";
   const [state, action, pending] = useActionState<FormState, FormData>(
     loginAction,
     {},
