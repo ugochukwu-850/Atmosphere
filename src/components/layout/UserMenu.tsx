@@ -1,22 +1,28 @@
+import { ChevronDown } from "lucide-react";
 import Link from "next/link";
 
 import { ButtonLink } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { logoutAction } from "@/lib/auth/actions";
 import { getCurrentUser } from "@/lib/auth/session";
 
 const MENU = [
+  { href: "/dashboard", label: "Dashboard" },
   { href: "/bookings", label: "Bookings" },
-  { href: "/list", label: "List" },
+  { href: "/list", label: "List something" },
   { href: "/account", label: "Account" },
 ] as const;
 
-export async function UserMenu() {
+/** Avatar + chevron (Figma header) when signed in; "Sign In" otherwise. */
+export async function UserMenu({
+  signInClassName,
+}: { signInClassName?: string } = {}) {
   const user = await getCurrentUser();
 
   if (!user) {
     return (
-      <ButtonLink href="/login" variant="light" size="sm">
-        Sign in
+      <ButtonLink href="/login" size="md" className={cn(signInClassName)}>
+        Sign In
       </ButtonLink>
     );
   }
@@ -32,24 +38,37 @@ export async function UserMenu() {
     <details className="relative">
       <summary
         aria-label="Account menu"
-        className="flex cursor-pointer list-none items-center gap-2 rounded-full py-1 pr-3 pl-1 hover:bg-white/10"
+        className="flex cursor-pointer list-none items-center gap-2"
       >
-        <span className="grid size-7 place-items-center rounded-full bg-gold text-xs font-semibold text-ink">
+        <span className="grid size-10 place-items-center rounded-full bg-[#d9d9d9] text-xs font-semibold text-charcoal">
           {initials}
         </span>
-        <span className="hidden text-sm md:inline">{user.name}</span>
+        <ChevronDown className="size-4 opacity-70" />
       </summary>
-      <div className="absolute right-0 mt-2 flex w-48 flex-col rounded-lg border bg-popover p-1 text-sm text-popover-foreground shadow-lg">
-        <Link href={`/people/${user.id}`} className="rounded-md px-3 py-2 hover:bg-muted">
+      <div className="absolute right-0 z-50 mt-3 flex w-52 flex-col rounded-xl border bg-popover p-1.5 text-sm text-popover-foreground shadow-xl">
+        <p className="truncate px-3 py-2 text-xs text-muted-foreground">
+          {user.email}
+        </p>
+        <Link
+          href={`/people/${user.id}`}
+          className="rounded-sm px-3 py-2 hover:bg-muted"
+        >
           Profile
         </Link>
         {MENU.map((item) => (
-          <Link key={item.href} href={item.href} className="rounded-md px-3 py-2 hover:bg-muted">
+          <Link
+            key={item.href}
+            href={item.href}
+            className="rounded-sm px-3 py-2 hover:bg-muted"
+          >
             {item.label}
           </Link>
         ))}
         <form action={logoutAction}>
-          <button type="submit" className="w-full rounded-md px-3 py-2 text-left hover:bg-muted">
+          <button
+            type="submit"
+            className="w-full rounded-sm px-3 py-2 text-left hover:bg-muted"
+          >
             Sign out
           </button>
         </form>
