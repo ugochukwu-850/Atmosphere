@@ -15,7 +15,8 @@ const TAGS = [
 ] as const;
 
 /**
- * Split-screen frame for sign in / sign up. Not in the Figma file: built from
+ * Split-screen frame for sign in (sign-up has its own Figma frames, see
+ * components/onboarding). Not in the Figma file: built from
  * its hero photo card, sign-in modal and footer tag patterns.
  */
 export function AuthShell({ children }: { children: ReactNode }) {

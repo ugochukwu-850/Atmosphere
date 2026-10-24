@@ -1,137 +1,134 @@
 "use client";
 
-import { Check } from "lucide-react";
 import Link from "next/link";
 import { useActionState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/form";
 import { registerAction, type FormState } from "@/lib/auth/actions";
-import { ROLE_OPTIONS, ROLES } from "@/lib/validators/auth";
+import type { ROLES } from "@/lib/validators/auth";
 
 import { FormAlert } from "./AuthShell";
 import { PasswordInput } from "./PasswordInput";
 
-export function RegisterForm() {
+// "Select field" from the Figma "Viewer Bording" frame: Sora light label,
+// 52px panel-filled input with a hairline ivory border and 10px radius.
+const label = "font-heading text-xs leading-4 font-light tracking-[-0.01em]";
+const input =
+  "h-13 rounded-[10px] border-[0.5px] border-muted bg-card px-5 text-base font-light";
+
+/** Create-account step; `roles` come from the path picked on step 1. */
+export function RegisterForm({
+  roles,
+}: {
+  roles: readonly (typeof ROLES)[number][];
+}) {
   const [state, action, pending] = useActionState<FormState, FormData>(
     registerAction,
     {},
   );
   const err = (key: string) => state.fieldErrors?.[key]?.[0];
   const value = (key: string) => state.values?.[key] as string | undefined;
-  const chosenRoles = (state.values?.roles as string[] | undefined) ?? [
-    "renter",
-  ];
 
   return (
-    <form action={action} className="flex flex-col gap-5" noValidate>
-      <Field label="Full name" htmlFor="name" error={err("name")}>
+    <form action={action} className="flex flex-col" noValidate>
+      {roles.map((role) => (
+        <input key={role} type="hidden" name="roles" value={role} />
+      ))}
+      <Field
+        label="Full Name"
+        htmlFor="name"
+        error={err("name")}
+        className="gap-2.5"
+        labelClassName={label}
+      >
         <Input
           id="name"
           name="name"
           autoComplete="name"
-          placeholder="Ada Okonkwo"
+          placeholder="John Doe"
           defaultValue={value("name")}
           aria-invalid={Boolean(err("name"))}
           required
-          className="h-13"
+          className={input}
         />
       </Field>
-      <div className="grid gap-5 sm:grid-cols-2">
-        <Field label="Email" htmlFor="email" error={err("email")}>
+      <div className="mt-[37px] grid gap-[25px] sm:grid-cols-2 sm:gap-1.5">
+        <Field
+          label="Email"
+          htmlFor="email"
+          error={err("email")}
+          className="gap-2.5"
+          labelClassName={label}
+        >
           <Input
             id="email"
             name="email"
             type="email"
             autoComplete="email"
-            placeholder="you@studio.com"
+            placeholder="you@gmail.com"
             defaultValue={value("email")}
             aria-invalid={Boolean(err("email"))}
             required
-            className="h-13"
+            className={input}
           />
         </Field>
-        <Field label="Phone" htmlFor="phone" error={err("phone")}>
+        <Field
+          label="Number"
+          htmlFor="phone"
+          error={err("phone")}
+          className="gap-2.5"
+          labelClassName={label}
+        >
           <Input
             id="phone"
             name="phone"
             type="tel"
             autoComplete="tel"
-            placeholder="+234 800 000 0000"
+            placeholder="+234 709 098 0098"
             defaultValue={value("phone")}
             aria-invalid={Boolean(err("phone"))}
             required
-            className="h-13"
+            className={input}
           />
         </Field>
       </div>
       <Field
-        label="Password"
+        label="Create Password"
         htmlFor="password"
         error={err("password")}
-        hint="At least 8 characters."
+        className="mt-[25px] gap-2.5"
+        labelClassName={label}
       >
         <PasswordInput
           id="password"
           name="password"
           autoComplete="new-password"
-          placeholder="Create a password"
+          placeholder="At least 8 characters"
           aria-invalid={Boolean(err("password"))}
           required
-          className="h-13"
+          className={input}
         />
       </Field>
 
-      <fieldset className="flex flex-col gap-3">
-        <legend className="mb-2 text-xs font-medium text-muted-foreground">
-          How will you use ArtMostSphere? Pick all that apply.
-        </legend>
-        {ROLES.map((role) => (
-          <label
-            key={role}
-            className="group relative flex cursor-pointer items-start gap-4 rounded-md border bg-card p-4 transition-colors hover:border-primary/40 has-[:checked]:border-primary has-[:checked]:bg-primary/5 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring/40"
-          >
-            <input
-              type="checkbox"
-              name="roles"
-              value={role}
-              defaultChecked={chosenRoles.includes(role)}
-              className="peer sr-only"
-            />
-            <span
-              aria-hidden
-              className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-xs border border-charcoal/25 text-transparent peer-checked:border-primary peer-checked:bg-primary peer-checked:text-white dark:border-white/30"
-            >
-              <Check className="size-3.5" strokeWidth={3} />
-            </span>
-            <span className="flex flex-col gap-0.5">
-              <span className="text-sm font-semibold">
-                {ROLE_OPTIONS[role].title}
-              </span>
-              <span className="text-xs text-muted-foreground">
-                {ROLE_OPTIONS[role].description}
-              </span>
-            </span>
-          </label>
-        ))}
-        {err("roles") && (
-          <p className="text-xs text-destructive">{err("roles")}</p>
-        )}
-      </fieldset>
-
-      {state.error && <FormAlert>{state.error}</FormAlert>}
+      {/* Roles come from step 1, so they only fail if the form was tampered with. */}
+      {(state.error ?? err("roles")) && (
+        <div className="mt-6">
+          <FormAlert>{state.error ?? err("roles")}</FormAlert>
+        </div>
+      )}
       <Button
         type="submit"
         disabled={pending}
-        className="mt-2 h-13 w-full text-base"
+        className="mt-[57px] h-13 w-full rounded-[10px] font-heading text-sm font-normal"
       >
-        {pending ? "Creating account…" : "Create account"}
+        {pending ? "Creating account…" : "Create Account"}
       </Button>
-      <p className="text-center text-sm text-muted-foreground">
+      <p className="mt-3.5 text-center text-[13px] leading-5 text-secondary-text">
         Already have an account?{" "}
         <Link
           href="/login"
-          className="font-semibold text-primary hover:underline"
+          className="font-bold text-primary underline hover:text-primary-hover"
         >
           Sign in
         </Link>
